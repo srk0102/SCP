@@ -1,12 +1,12 @@
-![1775980843468](image/README/1775980843468.png)![1775980848114](image/README/1775980848114.png)# SCP — Spatial Context Protocol
+# SCP — Spatial Context Protocol
 
 **MCP connects a brain to information. SCP connects a brain to a body that's already moving.**
+
+**In MCP the brain asks. In SCP the muscle asks.**
 
 ---
 
 ## The Problem
-
-Tesla's FSD reacts in milliseconds. But it only drives Teslas.
 
 Every LLM-controlled robot, character, or vehicle today is welded shut. The brain is custom-trained for one body. Swap the body, rebuild everything from scratch.
 
@@ -16,114 +16,102 @@ SCP is that protocol.
 
 ---
 
-## What SCP Is
+## Demo: Missile Defense
 
-SCP is three additions to MCP (Anthropic's Model Context Protocol):
+https://github.com/user-attachments/assets/missle-launching-system
 
-**1. The Embodiment Handshake**
-On connect, the body sends a JSON description of itself. "I am 10 missile launchers. I have heat sensors. My cooldown is 550ms." The brain reads this once. Swap the body, swap the JSON. Zero retraining.
-
-**2. Semantic Events (body → brain)**
-MCP is pull-only. The brain asks, the tool answers. SCP adds: the body pushes events UP without being asked. "Cold contact unclassified." "Missile breached ground — pain signal." "Hot contact ambiguous." The brain wakes ONLY when the muscle can't handle something. Most of the time, the brain sleeps.
-
-**3. The Muscle Layer (body acts without brain)**
-MCP assumes nothing happens until the brain calls a tool. SCP adds: the body runs continuously at 60fps. The brain's tool call drops into a system that's already moving. The muscle never stops to wait.
-
----
-
-## What This Means
-
-```
-Brain (LLM)       → classifies, strategizes, decides (seconds)
-Protocol (SCP)    → messenger between brain and muscle (milliseconds)
-Muscle (adapter)  → acts, reacts, remembers (60fps, always running)
-```
-
-The muscle acts first — always. It handles everything it knows. When it can't decide, it takes a safe default action and asks the brain async. The brain responds, the muscle adjusts. The pattern store replays the brain's past decisions so it never needs to ask twice. In MCP the brain asks. In SCP the muscle asks.
-
----
-
-## The Demo: Border Missile Defense
-
-A simulation with 10 missile launchers defending against 4 entity types:
-
-- Heat missiles — muscle auto-fires, no brain needed
-- Stealth missiles — cold, invisible to heat sensor, brain must classify
-- Birds — cold, harmless, ignored
-- Passenger planes — hot engine signal, muscle would shoot them, brain vetoes
-
-**Three modes, three results:**
+10 missile launchers defending a border. Heat missiles, stealth missiles, birds, passenger planes. The muscle fires on heat. The brain classifies everything else.
 
 | Mode | Heat missiles | Stealth missiles | Friendly fire | Brain calls/min |
 |---|---|---|---|---|
-| No-brainer (heat sensor only) | Intercepted | All missed | Shoots planes | 0 |
+| No-brainer (sensors only) | Intercepted | All missed | Shoots planes | 0 |
 | Brainer (LLM only) | Most missed (too slow) | Some caught | None | 60+ |
-| SCP (muscle + brain) | Intercepted | Brain classifies, muscle fires | Vetoed | 15-27 |
+| **SCP (muscle + brain)** | **Intercepted** | **Brain classifies, muscle fires** | **Vetoed** | **15-27** |
 
-**What was actually measured:**
+## Demo: Self-Driving Car
+
+https://github.com/user-attachments/assets/car-simulation
+
+3-lane road with traffic, ambulances, and obstacles. Same brain, different body. Zero code changes to the protocol or server.
+
+- Muscle avoids traffic (lane changes, speed control)
+- Brain classifies ambulances (halt and yield) and obstacles (swerve)
+- Pattern store replays brain decisions at $0 after 2 confirmations
+
+![Highway Adapter](image/README/1775980843468.png)
+
+---
+
+## What SCP Adds to MCP
+
+**1. Embodiment Handshake** — On connect, the body sends a JSON description of itself. Swap the body, swap the JSON. Zero retraining.
+
+**2. Semantic Events (body to brain)** — The body pushes events UP without being asked. The brain wakes ONLY when the muscle can't handle something.
+
+**3. Muscle Layer** — The body runs at 60fps. The brain's tool call drops into a system that's already moving. The muscle never stops to wait.
+
+---
+
+## Architecture
 
 ```
-125+ assign_targets calls landing reliably
-Stealth missile intercepts: brain mark_engage → muscle fires
-Plane vetos: brain mark_ignore → muscle skips
-Session 1: Brain calls/min = 27
-Session 2: Brain calls/min dropping (pattern store learning)
+Brain (LLM)       — classifies, strategizes, decides (seconds)
+Protocol (SCP)    — messenger between brain and muscle (milliseconds)
+Muscle (adapter)  — acts, reacts, remembers (60fps, always running)
 ```
+
+The muscle acts first. When it can't decide, it takes a safe default action and asks the brain async. The brain responds, the muscle adjusts. The pattern store replays past brain decisions so it never asks twice.
 
 ---
 
 ## The Pattern Store (Muscle Memory)
 
-After 2 consistent brain decisions on the same pattern, the muscle replays what the brain already decided — without asking again. No brain call. Zero latency. Zero cost.
+After 2 consistent brain decisions on the same pattern, the muscle replays what the brain already decided — without asking again. Zero latency. Zero cost.
 
-The brain is not bypassed. It is cached. Same outcome. Faster. Cheaper. Still correctable when the brain contradicts it. That is exactly how biological muscle memory works.
+The brain is not bypassed. It is cached. Same outcome, faster, cheaper, still correctable. That is exactly how biological muscle memory works.
 
 ---
 
-## How to Run It
+## Three Adapters, Same Brain
 
-Two terminals. No GPU. No local model. No training.
+| Adapter | Body | What it proves |
+|---|---|---|
+| **Missile Defense** (`adapters/aim-lab/`) | 10 launchers, 4 entity types | Brain classifies stealth + vetoes planes |
+| **Self-Driving Car** (`adapters/self-driving-car/`) | Car on 3-lane road | Lane changes, ambulance yield, obstacle avoidance |
+| **10-Lane Highway** (`adapters/highway/`) | 5+5 lane divided highway | Traffic signals, lane narrowing, chaos mode |
+
+Same server. Same bridge. Same Nova Micro. **Zero code changes between adapters.**
+
+---
+
+## How to Run
 
 ```bash
-# Terminal 1 — serve the adapter
-cd adapters/aim-lab
-python -m http.server 8080
+# Terminal 1 — serve an adapter
+cd adapters/self-driving-car && python -m http.server 8080
 
-# Terminal 2 — start the bridge
+# Terminal 2 — start the bridge (spawns the MCP server internally)
 cd client
-node qwen-mcp-bridge.js
+PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node qwen-mcp-bridge.js
 ```
 
 Open `http://localhost:8080/muscle.html`. Select SCP mode. Press Play.
 
-**Requirements:**
-- Node.js 20+
-- AWS account with Bedrock access (Amazon Nova Micro enabled)
-- `.env` file with `S3_AWS_ACCESS_KEY_ID`, `S3_AWS_SECRET_ACCESS_KEY`, `S3_AWS_REGION`
-
-Cost: ~$0.001 per brain call. Most runs cost less than $0.10.
-
----
-
-## Three Adapters (Same Protocol, Same Brain)
-
-| Adapter | Body | What it proves |
-|---|---|---|
-| **Missile Defense** (`adapters/aim-lab/`) | 10 launchers, 4 entity types | Brain classifies stealth missiles + vetoes planes |
-| **Self-Driving Car** (`adapters/self-driving-car/`) | Car on 3-lane road | Sensor-based classification, lane driving, halt validation |
-| **10-Lane Highway** (`adapters/highway/`) | 5+5 lane divided highway | Traffic signals, opposite traffic, rash drivers, rickshaws |
-
-Same MCP server. Same bridge. Same Nova Micro. **Zero code changes between adapters** — just swap the folder and set `PROMPT_PATH`.
+Swap adapters by changing the folder:
 
 ```bash
-# Run car adapter instead of missiles
-cd adapters/self-driving-car && python -m http.server 8080
-PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node client/qwen-mcp-bridge.js
+# Missile defense
+cd adapters/aim-lab && python -m http.server 8080
+PROMPT_PATH=../adapters/aim-lab/system-prompt.md node client/qwen-mcp-bridge.js
 
-# Run highway adapter
+# Highway
 cd adapters/highway && python -m http.server 8080
 PROMPT_PATH=../adapters/highway/system-prompt.md node client/qwen-mcp-bridge.js
 ```
+
+**Requirements:** Node.js 20+, AWS Bedrock access (Nova Micro), `.env` with AWS credentials.
+
+Cost: ~$0.001 per brain call. Most runs cost less than $0.10.
 
 ---
 
@@ -133,12 +121,12 @@ Three files. That is the entire contract.
 
 ```
 adapters/your-body/
-  embodiment.json    → describe your body
-  muscle.js          → physics + sensors + pattern store
-  system-prompt.md   → tell the brain what to classify
+  embodiment.json    — describe your body
+  muscle.js          — physics + sensors + pattern store
+  system-prompt.md   — tell the brain what to classify
 ```
 
-The bridge, MCP server, and pattern store require zero changes.
+The bridge, MCP server, and protocol require zero changes.
 
 ---
 
@@ -146,15 +134,15 @@ The bridge, MCP server, and pattern store require zero changes.
 
 Not a competition with Tesla or Boston Dynamics. They build the best brain for one body. SCP builds the open protocol between any brain and any body.
 
-Not a new ML technique. SCP is the open distribution layer.
-
-Not production robotics. This is a protocol proof with simulations. Hardware comes when someone writes a hardware adapter.
+Not a new ML technique. Not production robotics. This is a protocol proof with simulations. Hardware comes when someone writes a hardware adapter.
 
 ---
 
-## The One-Line Pitch
+## The Pitch
 
-Any LLM that produces JSON tool calls can control any body through SCP — with zero training. The muscle handles speed. The brain handles intelligence. The protocol connects them. The muscle replays what the brain already decided — without asking again.
+Same LLM, same protocol, zero training. Adapter #1 defended a border with 10 missile launchers. Adapter #2 drove a car through traffic with ambulances and obstacles. The protocol didn't change. The brain didn't change. Just the adapter.
+
+Any LLM that produces JSON tool calls can control any body through SCP — with zero training. The muscle handles speed. The brain handles intelligence. The muscle replays what the brain already decided — without asking again.
 
 ---
 
@@ -162,8 +150,6 @@ Any LLM that produces JSON tool calls can control any body through SCP — with 
 
 MIT
 
----
-
 ## Built by
 
-[srk0102](https://github.com/srk0102) — also building [AnimTOON-3B](https://huggingface.co/srk0102/AnimTOON-3B), an open model for SVG character animation. AnimTOON generates the character. SCP drives how it behaves.
+[srk0102](https://github.com/srk0102)
