@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scp.dev/schema/v0",
+  "title": "Spatial Context Protocol",
+  "description": "Universal action grammar for LLM-driven control of any physical or digital body. Task-space only by design — no joint-space or body-specific fields permitted. Rides on top of MCP (Model Context Protocol) as the transport.",
+  "scp_version": "0.1.0",
+  "type": "object",
+
+  "$defs": {
+    "Vector2": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "2D task-space coordinate or delta [x, y]"
+    },
+    "Vector3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "3D task-space coordinate or delta [x, y, z]"
+    },
+    "Quaternion": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "Body-agnostic orientation [w, x, y, z]"
+    },
+
+    "Embodiment": {
+      "type": "object",
+      "description": "Self-description sent by an adapter on connect. Tells the brain what body it just woke up in. The brain reads this once and knows everything it needs to plan within the body's limits.",
+      "required": ["embodiment_id", "scp_version", "dimensions", "actuators", "workspace"],
+      "additionalProperties": false,
+      "properties": {
+        "embodiment_id": { "type": "string" },
+        "scp_version": { "type": "string" },
+        "dimensions": { "enum": ["2d", "3d"] },
+        "label": { "type": "string", "description": "Human-readable name" },
+        "actuators": {
+          "type": "array",
+          "description": "Task-space effectors. NEVER joints. Each actuator is a point in task space the brain can target. Inverse kinematics is the adapter's job, not the brain's.",
+          "items": {
+            "type": "object",
+            "required": ["actuator_id", "rest_position", "reach"],
+            "additionalProperties": false,
+            "properties": {
+              "actuator_id": { "type": "string" },
+              "rest_position": { "$ref": "#/$defs/Vector2" },
+              "reach": { "type": "number", "description": "Maximum distance from rest position the actuator can travel" },
+              "max_velocity": { "type": "number" },
+              "max_force": { "type": "number" },
+              "collision_radius": { "type": "number", "description": "Used by adapter for inter-actuator collision avoidance" }
+            }
+          }
+        },
+        "sensors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What the body can perceive: position, velocity, force, mass, contact, etc."
+        },
+        "workspace": {
+          "type": "object",
+          "description": "Bounding box of valid space for actuators",
+          "required": ["min", "max"],
+          "additionalProperties": false,
+          "properties": {
+            "min": { "$ref": "#/$defs/Vector2" },
+            "max": { "$ref": "#/$defs/Vector2" }
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "description": "Body-wide physical limits the brain must respect",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "Intent": {
+      "type": "object",
+      "description": "A high-level task-space command from the brain. Body-agnostic by design. The adapter translates this into body-specific motor commands.",
+      "required": ["intent_id", "scp_version", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "intent_id": { "type": "string" },
+        "scp_version": { "type": "string" },
+        "type": {
+          "enum": [
+            "translate_to",
+            "translate_by",
+            "track_target",
+            "engage_target",
+            "apply_force",
+            "set_velocity",
+            "halt",
+            "release"
+          ],
+          "description": "Universal physics primitives. New types may be ADDED in future versions but never REMOVED."
+        },
+        "actuator_id": {
+          "type": "string",
+          "description": "Which actuator this intent applies to. Omit to broadcast to all."
+        },
+        "target_position": { "$ref": "#/$defs/Vector2" },
+        "target_velocity": { "$ref": "#/$defs/Vector2" },
+        "target_entity_id": {
+          "type": "string",
+          "description": "ID of an entity in world state to track or engage"
+        },
+        "force_vector": { "$ref": "#/$defs/Vector2" },
+        "max_speed": { "type": "number" },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stop_on_collision": { "type": "boolean" },
+            "max_force": { "type": "number" },
+            "avoid_actuators": { "type": "boolean", "description": "Adapter must perform inter-actuator collision avoidance" },
+            "engagement_radius": { "type": "number", "description": "Distance at which target is considered hit/engaged" }
+          }
+        },
+        "urgency": { "enum": ["low", "normal", "high"] }
+      }
+    },
+
+    "BulkAssignment": {
+      "type": "object",
+      "description": "Brain dispatches multiple intents at once — one per actuator. This is how a single brain coordinates a multi-actuator body in one round trip.",
+      "required": ["assignment_id", "scp_version", "assignments"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment_id": { "type": "string" },
+        "scp_version": { "type": "string" },
+        "assignments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Intent" }
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Optional brain-side reasoning trace, useful for logging and distillation"
+        }
+      }
+    },
+
+    "SemanticEvent": {
+      "type": "object",
+      "description": "Muscle pings the brain ONLY when a semantic threshold is broken. Never raw sensor data. This is the filter that prevents the LLM context from drowning in 60fps telemetry.",
+      "required": ["event_id", "scp_version", "type", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "event_id": { "type": "string" },
+        "scp_version": { "type": "string" },
+        "type": {
+          "enum": [
+            "intent_completed",
+            "intent_failed",
+            "target_engaged",
+            "target_lost",
+            "collision_detected",
+            "actuator_blocked",
+            "delta_mass_detected",
+            "force_threshold_exceeded",
+            "world_state_changed",
+            "reallocation_requested"
+          ]
+        },
+        "intent_id": { "type": "string" },
+        "actuator_id": { "type": "string" },
+        "entity_id": { "type": "string" },
+        "cause": { "type": "string" },
+        "delta_state": {
+          "type": "object",
+          "description": "What changed since the last event. Lets the brain update its world model without re-querying."
+        },
+        "timestamp": { "type": "number" }
+      }
+    },
+
+    "WorldState": {
+      "type": "object",
+      "description": "Snapshot the brain reads to plan. Owned by the SCP server, not the brain. Task-space only.",
+      "required": ["scp_version", "timestamp", "actuators", "entities"],
+      "additionalProperties": false,
+      "properties": {
+        "scp_version": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "embodiment_id": { "type": "string" },
+        "actuators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["actuator_id", "position", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "actuator_id": { "type": "string" },
+              "position": { "$ref": "#/$defs/Vector2" },
+              "velocity": { "$ref": "#/$defs/Vector2" },
+              "current_target": { "type": ["string", "null"] },
+              "status": { "enum": ["idle", "moving", "engaged", "blocked"] }
+            }
+          }
+        },
+        "entities": {
+          "type": "array",
+          "description": "Things in the world the actuators can interact with",
+          "items": {
+            "type": "object",
+            "required": ["entity_id", "position"],
+            "additionalProperties": false,
+            "properties": {
+              "entity_id": { "type": "string" },
+              "position": { "$ref": "#/$defs/Vector2" },
+              "velocity": { "$ref": "#/$defs/Vector2" },
+              "mass": { "type": "number" },
+              "kind": { "type": "string" },
+              "claimed_by": { "type": ["string", "null"], "description": "actuator_id currently assigned to this entity, if any" }
+            }
+          }
+        }
+      }
+    },
+
+    "TrainingPacket": {
+      "type": "object",
+      "description": "Data factory record. Logged automatically per intent execution. Future fuel for vertical stack distillation. Every adapter that connects silently makes our base brain smarter.",
+      "required": ["packet_id", "scp_version", "embodiment_id", "state_before", "intent", "state_after", "result", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "packet_id": { "type": "string" },
+        "scp_version": { "type": "string" },
+        "embodiment_id": { "type": "string" },
+        "state_before": { "$ref": "#/$defs/WorldState" },
+        "intent": { "$ref": "#/$defs/Intent" },
+        "state_after": { "$ref": "#/$defs/WorldState" },
+        "result": { "enum": ["success", "failed", "partial"] },
+        "duration_ms": { "type": "number" },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/SemanticEvent" }
+        },
+        "timestamp": { "type": "number" }
+      }
+    }
+  },
+
+  "x-mcp-tools": {
+    "description": "These are the MCP tools the SCP server exposes to any LLM client. Stable surface — never remove, only add.",
+    "tools": [
+      {
+        "name": "register_embodiment",
+        "description": "Adapter announces its body spec on connect. Returns embodiment_id used in all subsequent calls.",
+        "input": "Embodiment",
+        "output": { "embodiment_id": "string" }
+      },
+      {
+        "name": "query_world_state",
+        "description": "Brain reads current task-space snapshot. Use this to plan, not to execute.",
+        "input": { "embodiment_id": "string" },
+        "output": "WorldState"
+      },
+      {
+        "name": "assign_targets",
+        "description": "Brain dispatches a bulk assignment of intents to actuators. The muscle handles execution at native frame rate. Brain returns to sleep until a semantic event wakes it.",
+        "input": "BulkAssignment",
+        "output": { "accepted": "boolean", "rejected_intents": "array" }
+      },
+      {
+        "name": "poll_events",
+        "description": "Brain pulls accumulated semantic events since last poll. Cheaper than streaming for MVP.",
+        "input": { "embodiment_id": "string", "since_timestamp": "number" },
+        "output": { "events": "array" }
+      },
+      {
+        "name": "get_training_packet",
+        "description": "Pull logged state/action/result records for distillation. Read-only.",
+        "input": { "embodiment_id": "string", "limit": "number" },
+        "output": { "packets": "array" }
+      }
+    ]
+  },
+
+  "x-design-rules": {
+    "FROZEN_AFTER_MVP": [
+      "scp_version field MUST appear on every payload",
+      "Fields may be ADDED but never REMOVED within the same major version",
+      "Tool names may be ADDED but never REMOVED",
+      "Enum values may be ADDED but never REMOVED",
+      "All coordinates are TASK-SPACE only — no joint angles, no body-specific fields, no actuator-internal values",
+      "All forces are in canonical units (Newtons in real-world 3D, pixels/sec^2 in 2D simulations)",
+      "Body specifics live in adapter code only, never in the schema"
+    ],
+    "WHY_TASK_SPACE_ONLY": "If the schema permits joint-space fields, the brain learns body-specific shortcuts and we lose cross-embodiment generalization. Becoming Tesla E2E is the failure mode this rule prevents. The schema is the wall that enforces architectural discipline — break it once and the whole ideology collapses."
+  }
+}

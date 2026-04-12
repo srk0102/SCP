@@ -1,0 +1,33 @@
+{
+  "embodiment_id": "self-driving-car-v1",
+  "scp_version": "0.1.0",
+  "dimensions": "2d",
+  "label": "Self-driving car on 3-lane road",
+  "actuators": [
+    {
+      "actuator_id": "car_0",
+      "rest_position": [100, 100],
+      "sensors": ["ray_proximity", "camera_classify"],
+      "max_velocity": 3,
+      "sensor_range": 150,
+      "ray_count": 5,
+      "lane_count": 3
+    }
+  ],
+  "sensors": ["ray_proximity", "camera_classify"],
+  "workspace": {
+    "min": [0, -100000],
+    "max": [200, 100000]
+  },
+  "constraints": {
+    "road_lanes": 3,
+    "road_width": 180,
+    "scoring": {
+      "distance_driven": 0.01,
+      "ambulance_yield": 5,
+      "obstacle_avoided": 2,
+      "collision": -10,
+      "ambulance_ignored": -5
+    }
+  }
+}

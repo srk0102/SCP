@@ -1,0 +1,36 @@
+{
+  "embodiment_id": "border-defense-v3",
+  "scp_version": "0.1.0",
+  "dimensions": "2d",
+  "label": "10-launcher missile-vs-missile border defense",
+  "actuators": [
+    { "actuator_id": "hand_0", "rest_position": [60, 780],   "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_1", "rest_position": [180, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_2", "rest_position": [300, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_3", "rest_position": [420, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_4", "rest_position": [540, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_5", "rest_position": [660, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_6", "rest_position": [780, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_7", "rest_position": [900, 780],  "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_8", "rest_position": [1020, 780], "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 },
+    { "actuator_id": "hand_9", "rest_position": [1140, 780], "sensor_range": 260, "launch_cooldown_ms": 550, "interceptor_speed": 320, "interceptor_lifetime_ms": 4200, "sensors": ["heat", "radar_zone"], "max_force": 100, "collision_radius": 8 }
+  ],
+  "sensors": ["heat", "radar_zone"],
+  "workspace": {
+    "min": [0, 0],
+    "max": [1200, 800]
+  },
+  "constraints": {
+    "ground_y": 790,
+    "intercept_radius": 14,
+    "scale_px_per_cm": 40,
+    "battlefield_height_cm": 20,
+    "plane_cruise_altitude_y": 640,
+    "scoring": {
+      "missile_intercept": 1,
+      "missile_ground_breach": -1,
+      "plane_shot": -3,
+      "bird_shot": -1
+    }
+  }
+}

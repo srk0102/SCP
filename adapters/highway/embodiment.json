@@ -1,0 +1,39 @@
+{
+  "embodiment_id": "highway-10lane-v1",
+  "scp_version": "0.1.0",
+  "dimensions": "2d",
+  "label": "10-lane divided highway with signals",
+  "actuators": [
+    {
+      "actuator_id": "car_0",
+      "rest_position": [150, 100],
+      "sensors": ["camera", "lidar", "radar"],
+      "max_velocity": 4,
+      "sensor_range_camera": 140,
+      "sensor_range_lidar": 160,
+      "sensor_range_radar": 250,
+      "lane_count": 5
+    }
+  ],
+  "sensors": ["camera", "lidar", "radar"],
+  "workspace": {
+    "min": [0, -100000],
+    "max": [600, 100000]
+  },
+  "constraints": {
+    "our_lanes": 5,
+    "opposite_lanes": 5,
+    "divider_x": 275,
+    "road_width_per_side": 250,
+    "scoring": {
+      "distance": 0.01,
+      "red_light_obeyed": 2,
+      "red_light_run": -10,
+      "ambulance_yield_correct": 5,
+      "ambulance_yield_wrong_side": -3,
+      "pedestrian_stopped": 5,
+      "pedestrian_hit": -50,
+      "collision": -10
+    }
+  }
+}

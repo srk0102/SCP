@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SCP — Self-Driving Car (Adapter #2)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0b0e14; color: #cdd6f4; font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; overflow: hidden; }
+  #wrap { display: flex; height: 100vh; }
+  #road-panel { flex: 0 0 220px; position: relative; }
+  #road-panel canvas { display: block; }
+  #side-panel { flex: 1; display: flex; flex-direction: column; padding: 12px; overflow-y: auto; }
+  #side-panel h1 { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #89b4fa; }
+  #controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  #controls select, #controls button { background: #1e2030; color: #cdd6f4; border: 1px solid #313244; padding: 5px 10px; border-radius: 4px; font-family: inherit; cursor: pointer; font-size: 12px; }
+  #controls #playpause { background: #2a4d36; color: #a6e3a1; font-weight: 600; }
+  .ws { font-size: 11px; padding: 2px 8px; border-radius: 3px; }
+  .ws.up { background: #2a4d36; color: #a6e3a1; }
+  .ws.down { background: #4d2a2a; color: #f38ba8; }
+  #legend { font-size: 11px; color: #6c7086; margin-bottom: 10px; line-height: 1.6; }
+  #legend span { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; }
+  #legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  #metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
+  #metrics .m { background: #1e2030; padding: 5px 8px; border-radius: 4px; border-left: 3px solid #89b4fa; font-size: 11px; }
+  #metrics .m .k { color: #6c7086; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+  #metrics .m .v { color: #cdd6f4; font-size: 15px; font-weight: 600; margin-top: 2px; }
+  #metrics .score { border-left-color: #f9e2af; }
+  #metrics .score .v { color: #f9e2af; font-size: 18px; }
+  #metrics .danger .v { color: #f38ba8; }
+  .log-panel { flex: 1; overflow-y: auto; background: #11131a; border: 1px solid #313244; padding: 6px 8px; font-size: 10px; line-height: 1.4; }
+  .log-panel .ev { color: #94e2d5; }
+  .log-panel .as { color: #f9e2af; }
+  .log-panel .er { color: #f38ba8; font-weight: 600; }
+  .log-panel .brain { color: #cba6f7; font-weight: 600; background: rgba(203,166,247,0.08); padding: 1px 3px; border-radius: 2px; }
+  .log-panel .cache { color: #74c7ec; font-style: italic; }
+  .log-panel .muscle { color: #a6e3a1; font-weight: 600; }
+  .log-panel .sensor { color: #89b4fa; }
+  .log-panel .safety { color: #fab387; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="road-panel">
+    <canvas id="carCanvas"></canvas>
+  </div>
+  <div id="side-panel">
+    <h1>SCP — Self-Driving Car (Adapter #2)</h1>
+    <div id="controls">
+      <button id="playpause">▶ Play</button>
+      <select id="mode">
+        <option value="scp" selected>Brainer + Muscles (SCP)</option>
+        <option value="no-brainer">No-brainer (sensors only)</option>
+        <option value="brainer">Brainer (LLM only)</option>
+      </select>
+      <button id="reset">Reset</button>
+      <span id="ws" class="ws down">WS: disconnected</span>
+    </div>
+    <div id="legend">
+      <span><span class="dot" style="background:#89b4fa"></span> Our car</span>
+      <span><span class="dot" style="background:#a6adc8"></span> Traffic (muscle avoids)</span>
+      <span><span class="dot" style="background:#f38ba8"></span> Ambulance (brain must yield)</span>
+      <span><span class="dot" style="background:#fab387"></span> Obstacle (brain must classify)</span>
+    </div>
+    <div id="metrics">
+      <div class="m score"><div class="k">Score</div><div class="v" id="m-score">0</div></div>
+      <div class="m"><div class="k">Distance (m)</div><div class="v" id="m-dist">0</div></div>
+      <div class="m"><div class="k">Collisions</div><div class="v" id="m-collisions">0</div></div>
+      <div class="m"><div class="k">Ambulances yielded</div><div class="v" id="m-yields">0</div></div>
+      <div class="m"><div class="k">Obstacles avoided</div><div class="v" id="m-avoided">0</div></div>
+      <div class="m"><div class="k">Ambulances ignored</div><div class="v" id="m-amb-ignored">0</div></div>
+      <div class="m"><div class="k">Brain calls</div><div class="v" id="m-bcm">0</div></div>
+      <div class="m"><div class="k">Cache hits/miss</div><div class="v" id="m-cache">0h/0m</div></div>
+      <div class="m"><div class="k">FPS</div><div class="v" id="m-fps">60</div></div>
+      <div class="m"><div class="k">Speed</div><div class="v" id="m-speed">0</div></div>
+    </div>
+    <div style="display:flex; gap:6px; flex:1; min-height:0;">
+      <div style="flex:1; display:flex; flex-direction:column;">
+        <div style="color:#6c7086; font-size:9px; text-transform:uppercase; margin-bottom:2px;">Sensors / World</div>
+        <div id="log-engine" class="log-panel"></div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column;">
+        <div style="color:#6c7086; font-size:9px; text-transform:uppercase; margin-bottom:2px;">💪 Muscle / 🧠 Brain</div>
+        <div id="log-car" class="log-panel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="./muscle.js"></script>
+</body>
+</html>

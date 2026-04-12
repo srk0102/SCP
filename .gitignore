@@ -1,0 +1,7 @@
+.env
+node_modules/
+.venv/
+packets.jsonl
+runs/
+*.log
+.DS_Store

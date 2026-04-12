@@ -1,0 +1,20 @@
+# SCP local Qwen serving shim — minimal deps
+# Run inside scp-mvp/.venv only. NEVER install into venv-unsloth.
+#
+# IMPORTANT: torch is NOT listed here because the default PyPI wheel is CPU-only
+# on Windows. Install torch separately with the CUDA index URL that matches your
+# GPU before running `pip install -r requirements.txt`:
+#
+#   RTX 50-series (Blackwell):  pip install torch --index-url https://download.pytorch.org/whl/cu128
+#   RTX 30/40-series (Ampere/Ada): pip install torch --index-url https://download.pytorch.org/whl/cu124
+#   CPU only:                   pip install torch
+#
+# Then verify with:  python -c "import torch; print(torch.cuda.is_available())"
+# If False, you have CPU torch. Uninstall and reinstall from the right index.
+
+transformers>=4.45.0
+accelerate>=0.34.0
+bitsandbytes>=0.44.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0

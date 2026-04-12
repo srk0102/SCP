@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SCP MVP — Border Defense (Launchers + Interceptors)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0b0e14; color: #cdd6f4; font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; }
+  #wrap { display: flex; flex-direction: column; align-items: center; padding: 12px; }
+  #topbar { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; max-width: 1200px; }
+  #topbar h1 { margin: 0; font-size: 16px; font-weight: 600; color: #89b4fa; }
+  #topbar select, #topbar button { background: #1e2030; color: #cdd6f4; border: 1px solid #313244; padding: 6px 12px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+  #topbar button:hover { background: #313244; }
+  #topbar #playpause { background: #2a4d36; color: #a6e3a1; font-weight: 600; }
+  #topbar #playpause:hover { background: #3a5d46; }
+  #topbar .ws { font-size: 11px; padding: 2px 8px; border-radius: 3px; }
+  #topbar .ws.up { background: #2a4d36; color: #a6e3a1; }
+  #topbar .ws.down { background: #4d2a2a; color: #f38ba8; }
+  canvas { border: 1px solid #313244; background: #11131a; display: block; }
+  #legend { display: flex; gap: 18px; margin-top: 6px; max-width: 1200px; width: 1200px; font-size: 11px; color: #6c7086; padding: 4px 0; }
+  #legend span { display: inline-flex; align-items: center; gap: 6px; }
+  #legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  #metrics { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px 16px; margin-top: 8px; max-width: 1200px; width: 1200px; font-size: 11px; }
+  #metrics .m { background: #1e2030; padding: 6px 10px; border-radius: 4px; border-left: 3px solid #89b4fa; }
+  #metrics .m .k { color: #6c7086; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+  #metrics .m .v { color: #cdd6f4; font-size: 16px; font-weight: 600; margin-top: 2px; }
+  #metrics .score { border-left-color: #f9e2af; }
+  #metrics .score .v { color: #f9e2af; font-size: 22px; }
+  #metrics .danger .v { color: #f38ba8; }
+  #log { margin-top: 8px; max-width: 1200px; width: 1200px; height: 140px; overflow-y: auto; background: #11131a; border: 1px solid #313244; padding: 6px 10px; font-size: 11px; line-height: 1.4; }
+  #log .ev { color: #94e2d5; }
+  #log .as { color: #f9e2af; }
+  #log .er { color: #f38ba8; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="topbar">
+    <h1>SCP MVP — Border Defense (Launchers + Interceptors)</h1>
+    <button id="playpause">▶ Play</button>
+    <label>Mode:
+      <select id="mode">
+        <option value="scp" selected>Brainer + Muscles (SCP)</option>
+        <option value="no-brainer">No-brainer (heat sensor only)</option>
+        <option value="brainer">Brainer (LLM only)</option>
+      </select>
+    </label>
+    <button id="reset">Reset</button>
+    <span id="ws" class="ws down">WS: disconnected</span>
+  </div>
+
+  <canvas id="canvas" width="1200" height="800"></canvas>
+
+  <div id="legend">
+    <span><span class="dot" style="background:#fab387"></span>🔥 heat missile (muscle auto-fires)</span>
+    <span><span class="dot" style="background:#a569bd"></span>🥷 stealth missile (brain must mark_engage)</span>
+    <span><span class="dot" style="background:#94e2d5"></span>🐦 bird (cold, ignored)</span>
+    <span><span class="dot" style="background:#89b4fa"></span>✈️ plane (brain must mark_ignore)</span>
+    <span><span class="dot" style="background:#a6e3a1"></span>⇡ interceptor (our projectile)</span>
+    <span style="color:#a6e3a1">— — radar zone</span>
+  </div>
+
+  <div id="metrics">
+    <div class="m score"><div class="k">Score</div><div class="v" id="m-score">0</div></div>
+    <div class="m"><div class="k">Missile intercepts</div><div class="v" id="m-mi">0</div></div>
+    <div class="m danger"><div class="k">Missile breaches</div><div class="v" id="m-mb">0</div></div>
+    <div class="m danger"><div class="k">Friendly fire</div><div class="v" id="m-pf">0 pl / 0 bd</div></div>
+    <div class="m"><div class="k">Airspace / In-flight / Acc</div><div class="v" id="m-balls">0</div></div>
+    <div class="m"><div class="k">Avg TTK (ms)</div><div class="v" id="m-ttk">—</div></div>
+    <div class="m"><div class="k">Brain calls / min</div><div class="v" id="m-bcm">0</div></div>
+    <div class="m"><div class="k">FPS</div><div class="v" id="m-fps">0</div></div>
+    <div class="m"><div class="k">Cache hits/miss (patterns)</div><div class="v" id="m-cache">0h/0m (0p)</div></div>
+  </div>
+
+  <div id="log"></div>
+</div>
+
+<script type="module" src="./muscle.js"></script>
+</body>
+</html>

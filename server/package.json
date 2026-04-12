@@ -1,0 +1,17 @@
+{
+  "name": "scp-mvp-server",
+  "version": "0.1.0",
+  "description": "SCP (Spatial Context Protocol) MCP server + WebSocket bridge for the 10-hand aim-lab MVP",
+  "type": "module",
+  "main": "mcp-server.js",
+  "scripts": {
+    "start": "node mcp-server.js",
+    "ws": "node ws-bridge.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1029.0",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  }
+}
