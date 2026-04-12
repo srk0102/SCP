@@ -10,20 +10,22 @@
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%" align="center">
 
 ### Missile Defense
-<video src="https://github.com/srk0102/SCP/raw/master/videos/missle launching system.mp4" controls width="100%"></video>
 
-10 launchers defending a border. Muscle fires on heat. Brain classifies stealth missiles and vetoes planes.
+[![Missile Defense Demo](image/README/missile-defense-thumb.png)](videos/missle%20launching%20system.mp4)
+
+*Click to watch video* | 10 launchers defending a border. Muscle fires on heat. Brain classifies stealth missiles and vetoes planes.
 
 </td>
-<td width="50%">
+<td width="50%" align="center">
 
 ### Self-Driving Car
-<video src="https://github.com/srk0102/SCP/raw/master/videos/car-simulation.mp4" controls width="100%"></video>
 
-3-lane road with traffic, ambulances, obstacles. Same brain, different body. Zero protocol changes.
+[![Self-Driving Car Demo](image/README/car-simulation-thumb.png)](videos/car-simulation.mp4)
+
+*Click to watch video* | 3-lane road with traffic, ambulances, obstacles. Same brain, different body. Zero protocol changes.
 
 </td>
 </tr>
