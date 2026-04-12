@@ -156,6 +156,20 @@ The bridge, MCP server, and protocol require zero changes.
 
 ---
 
+## Contributing
+
+Want to add an adapter?
+
+1. Copy `adapters/self-driving-car/` as a template
+2. Update `embodiment.json` for your body — actuators, sensors, workspace bounds
+3. Write `muscle.js` for your physics — movement, collision, sensor simulation, lane/target logic
+4. Update `system-prompt.md` for your context — tell the brain what sensor patterns mean and what actions to take
+5. Open a PR
+
+The only rule: don't touch `server/`, `client/`, or `schema/`. The protocol is frozen. Your adapter is the only thing you write.
+
+---
+
 ## The Pitch
 
 Same LLM, same protocol, zero training. Adapter #1 defended a border with 10 missile launchers. Adapter #2 drove a car through traffic with ambulances and obstacles. The protocol didn't change. The brain didn't change. Just the adapter.
