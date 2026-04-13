@@ -1,0 +1,66 @@
+{
+  "name": "scp-protocol",
+  "version": "0.1.0",
+  "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
+  "main": "index.js",
+  "module": "index.mjs",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./pattern-store": {
+      "import": "./pattern-store.mjs",
+      "require": "./pattern-store.js"
+    },
+    "./adapter": {
+      "import": "./adapter.mjs",
+      "require": "./adapter.js"
+    },
+    "./bridge": {
+      "import": "./bridge.mjs",
+      "require": "./bridge.js"
+    }
+  },
+  "keywords": [
+    "scp",
+    "spatial-context-protocol",
+    "embodied-ai",
+    "real-time",
+    "robotics",
+    "pattern-store",
+    "muscle-memory",
+    "llm",
+    "mcp"
+  ],
+  "author": "srk0102",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/srk0102/SCP"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:pattern": "node --test tests/pattern-store.test.js",
+    "test:adapter": "node --test tests/adapter.test.js",
+    "test:bridge": "node --test tests/bridge.test.js",
+    "test:persistence": "node --test tests/persistence.test.js",
+    "test:integration": "node --test tests/integration.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.mjs",
+    "pattern-store.js",
+    "pattern-store.mjs",
+    "adapter.js",
+    "adapter.mjs",
+    "bridge.js",
+    "bridge.mjs"
+  ]
+}

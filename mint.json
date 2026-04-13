@@ -1,0 +1,58 @@
+{
+  "name": "SCP",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5",
+    "ultraLight": "#EEF2FF",
+    "ultraDark": "#3730A3"
+  },
+  "modeToggle": {
+    "default": "dark"
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/srk0102/SCP"
+    },
+    {
+      "name": "npm",
+      "url": "https://npmjs.com/package/scp-protocol"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/getting-started"
+  },
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/srk0102/SCP"
+    },
+    {
+      "name": "npm",
+      "icon": "npm",
+      "url": "https://npmjs.com/package/scp-protocol"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["introduction", "getting-started"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/srk0102/SCP"
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  }
+}

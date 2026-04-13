@@ -1,4 +1,4 @@
-# SCP — Spatial Context Protocol
+# SCP -- Spatial Context Protocol
 
 **MCP connects a brain to information. SCP connects a brain to a body that's already moving.**
 
@@ -37,7 +37,7 @@
 
 Every LLM-controlled robot, character, or vehicle today is welded shut. The brain is custom-trained for one body. Swap the body, rebuild everything from scratch.
 
-There is no open protocol that lets any LLM control any body — physical or virtual — without retraining. SCP is that protocol.
+There is no open protocol that lets any LLM control any body -- physical or virtual -- without retraining. SCP is that protocol.
 
 ---
 
@@ -53,18 +53,18 @@ There is no open protocol that lets any LLM control any body — physical or vir
 
 **Three additions:**
 
-1. **Embodiment Handshake** — Body sends JSON description on connect. Swap the body, swap the JSON. Zero retraining.
-2. **Semantic Events** — Body pushes events UP without being asked. Brain wakes only when muscle can't handle something.
-3. **Muscle Layer** — Body runs at 60fps. Brain's tool call drops into a system that's already moving.
+1. **Embodiment Handshake** -- Body sends JSON description on connect. Swap the body, swap the JSON. Zero retraining.
+2. **Semantic Events** -- Body pushes events UP without being asked. Brain wakes only when muscle can't handle something.
+3. **Muscle Layer** -- Body runs at 60fps. Brain's tool call drops into a system that's already moving.
 
 ---
 
 ## Architecture
 
 ```
-Brain (LLM)       — classifies, strategizes, decides (seconds)
-Protocol (SCP)    — messenger between brain and muscle (milliseconds)
-Muscle (adapter)  — acts, reacts, remembers (60fps, always running)
+Brain (LLM)       -- classifies, strategizes, decides (seconds)
+Protocol (SCP)    -- messenger between brain and muscle (milliseconds)
+Muscle (adapter)  -- acts, reacts, remembers (60fps, always running)
 ```
 
 The muscle acts first. When it can't decide, it takes a safe default action and asks the brain async. The brain responds, the muscle adjusts. The pattern store replays past brain decisions so it never asks twice.
@@ -94,7 +94,7 @@ The muscle acts first. When it can't decide, it takes a safe default action and 
 
 ## Pattern Store (Muscle Memory)
 
-After 2 consistent brain decisions on the same pattern, the muscle replays what the brain already decided — without asking again. Zero latency. Zero cost.
+After 2 consistent brain decisions on the same pattern, the muscle replays what the brain already decided -- without asking again. Zero latency. Zero cost.
 
 The brain is not bypassed. It is cached. Same outcome, faster, cheaper, still correctable. That is exactly how biological muscle memory works.
 
@@ -112,13 +112,29 @@ Same server. Same bridge. Same Nova Micro. **Zero code changes between adapters.
 
 ---
 
+## SDK
+
+```bash
+npm install scp-protocol
+```
+
+The SDK package (`packages/scp-core/`) exports:
+
+- **PatternStore** -- muscle memory with similarity matching, confidence scoring, exploration rate
+- **SCPAdapter** -- base class for any body, with reflex layer
+- **SCPBridge** -- base class for any LLM provider
+
+56 tests. Zero external services. SQLite ships bundled.
+
+---
+
 ## How to Run
 
 ```bash
-# Terminal 1 — serve an adapter
+# Terminal 1 -- serve an adapter
 cd adapters/self-driving-car && python -m http.server 8080
 
-# Terminal 2 — start the bridge (spawns MCP server internally)
+# Terminal 2 -- start the bridge (spawns MCP server internally)
 cd client
 PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node qwen-mcp-bridge.js
 ```
@@ -147,9 +163,9 @@ Three files. That is the entire contract.
 
 ```
 adapters/your-body/
-  embodiment.json    — describe your body
-  muscle.js          — physics + sensors + pattern store
-  system-prompt.md   — tell the brain what to classify
+  embodiment.json    -- describe your body
+  muscle.js          -- physics + sensors + pattern store
+  system-prompt.md   -- tell the brain what to classify
 ```
 
 The bridge, MCP server, and protocol require zero changes.
@@ -161,9 +177,9 @@ The bridge, MCP server, and protocol require zero changes.
 Want to add an adapter?
 
 1. Copy `adapters/self-driving-car/` as a template
-2. Update `embodiment.json` for your body — actuators, sensors, workspace bounds
-3. Write `muscle.js` for your physics — movement, collision, sensor simulation, lane/target logic
-4. Update `system-prompt.md` for your context — tell the brain what sensor patterns mean and what actions to take
+2. Update `embodiment.json` for your body -- actuators, sensors, workspace bounds
+3. Write `muscle.js` for your physics -- movement, collision, sensor simulation, lane/target logic
+4. Update `system-prompt.md` for your context -- tell the brain what sensor patterns mean and what actions to take
 5. Open a PR
 
 The only rule: don't touch `server/`, `client/`, or `schema/`. The protocol is frozen. Your adapter is the only thing you write.

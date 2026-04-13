@@ -1,0 +1,221 @@
+---
+title: Introduction
+description: SCP connects any LLM to any body. Real-time. Zero training.
+---
+
+# SCP - Spatial Context Protocol
+
+**MCP connects a brain to information. SCP connects a brain to a body that's already moving.**
+
+---
+
+## The Problem
+
+Every LLM-controlled robot, character, or vehicle today is welded shut.
+
+Tesla FSD reacts in milliseconds. But it only drives Teslas. The brain is trained on one body, for one body, forever. Swap the vehicle and you start from zero.
+
+MCP lets any LLM call any tool. But tools wait. They do not move at 60fps. They have no reflexes. They cannot push information upward without being asked.
+
+There was nothing between a passive tool and a moving body.
+
+**SCP is that missing layer.**
+
+---
+
+## What SCP Is
+
+SCP is a real-time execution runtime for embodied AI systems.
+
+It adds three things to MCP:
+
+<CardGroup cols={3}>
+  <Card title="Embodiment Handshake" icon="handshake">
+    Body describes itself on connect via JSON. Swap the body, swap the JSON. Zero retraining.
+  </Card>
+  <Card title="Semantic Events" icon="arrow-up">
+    Body pushes events UP without being asked. Brain wakes only when muscle cannot handle something.
+  </Card>
+  <Card title="Muscle Layer" icon="bolt">
+    Body runs at 60fps continuously. Brain drops in when needed. Muscle never waits.
+  </Card>
+</CardGroup>
+
+---
+
+## The Inversion
+
+This is the most important thing to understand about SCP.
+
+```
+MCP:  Brain asks  →  Tool answers
+SCP:  Muscle acts →  Muscle asks brain when stuck
+```
+
+In MCP the brain initiates. The tool is passive.
+
+In SCP the body initiates. The brain is on call.
+
+The body is always running. The brain sleeps until needed.
+
+---
+
+## The Three Layers
+
+SCP splits intelligence based on speed. This mirrors real neuroscience.
+
+```
+Reflex Layer    0-5ms     Hardcoded rules. Never asks brain.
+                          Obstacle detected → stop instantly.
+                          No reasoning. No latency.
+
+Muscle Layer    5-50ms    Pattern store. Replays brain decisions.
+                          Seen this before → act locally.
+                          Zero API cost after learning.
+
+Brain Layer     500ms-3s  LLM. Novel situations only.
+                          Never seen this → classify and decide.
+                          Gets called less over time.
+```
+
+The reflex layer mirrors your spinal cord. The muscle layer mirrors your basal ganglia and cerebellum. The brain layer mirrors conscious thought.
+
+Fast things stay fast. Slow things only happen when necessary.
+
+---
+
+## The Learning Loop
+
+This is what makes SCP different from a simple MCP wrapper.
+
+```
+Brain makes decision
+     ↓
+Pattern store logs it
+     ↓
+Same situation next time
+     ↓
+Pattern store handles locally
+     ↓
+No brain call. Zero cost. Zero latency.
+```
+
+After 3 consistent brain decisions on the same pattern, the muscle handles it forever.
+
+**Brain teaches once. Muscle remembers forever.**
+
+### Real session data
+
+```
+Session 1:  125 brain calls   $0.125
+Session 2:   40 brain calls   $0.040
+Session 3:    8 brain calls   $0.008
+Session 4+:   0 brain calls   $0.000
+```
+
+The system gets cheaper and faster the more it runs. Without retraining anything.
+
+---
+
+## Three Adapters, Same Brain
+
+The core claim of SCP: swap the adapter, the brain and protocol stay identical.
+
+| Adapter | Body | What it proves |
+|---|---|---|
+| Missile Defense | 10 launchers, 4 entity types | Brain classifies stealth, vetoes planes |
+| Self-Driving Car | Car on 3-lane road | Ambulance yield, obstacle avoidance |
+| 10-Lane Highway | Divided highway | Traffic signals, chaos mode |
+
+Same Nova Micro. Same bridge. Same protocol. Zero code changes between adapters.
+
+---
+
+## Install
+
+```bash
+npm install scp-protocol
+```
+
+Zero external services. SQLite ships bundled. Works immediately.
+
+---
+
+## What Exists Today
+
+<Note>
+SCP is v0.1.0. These things exist and are tested. Anything not listed here does not exist yet.
+</Note>
+
+**Working today:**
+- PatternStore with similarity matching, confidence scoring, exploration rate
+- SCPAdapter base class with reflex layer
+- SCPBridge base class
+- SQLite persistence bundled via better-sqlite3
+- Three working adapters (missile defense, car, highway)
+- 56 tests passing, 0 failing
+
+**Coming in v0.2.0:**
+- OllamaBridge (free local models)
+- OpenAIBridge
+- AnthropicBridge
+- HTTPTransport (hardware adapters)
+- MQTTTransport (IoT devices)
+
+**Coming in v0.3.0:**
+- Godot plugin
+- Unity package
+- Python SDK
+- Visual debugger
+
+---
+
+## Who This Is For
+
+**Indie game developers**
+Characters that learn to behave and stop costing API money after the warmup phase.
+
+**Hobbyist roboticists**
+Wire any LLM to your Raspberry Pi or Arduino in one afternoon instead of two weeks.
+
+**Animation developers**
+Characters that react intelligently to their environment without hand-scripting every behavior.
+
+**Anyone building systems that make repeated decisions at speed.**
+
+---
+
+## Quick Navigation
+
+<CardGroup cols={2}>
+  <Card title="Getting Started" icon="rocket" href="/getting-started">
+    Install SCP and run your first adapter in under 10 minutes.
+  </Card>
+  <Card title="Core Concepts" icon="brain" href="/concepts">
+    Understand the three layers, the inversion, and the learning loop.
+  </Card>
+  <Card title="Writing an Adapter" icon="code" href="/adapter">
+    The three file contract. Everything you need to build a new body.
+  </Card>
+  <Card title="Pattern Store" icon="database" href="/pattern-store">
+    How muscle memory works. The secret to near-zero API costs.
+  </Card>
+</CardGroup>
+
+---
+
+## Origin
+
+SCP was built accidentally.
+
+[AnimTOON-3B](https://huggingface.co/srk0102/AnimTOON-3B) is an open model that rigs SVG characters into Lottie animations. Trying to extend it to 3D rigging hit a wall. The model was trying to understand the world AND control a body simultaneously. No model is good at both.
+
+That question led to SCP.
+
+AnimTOON generates the character. SCP drives how it behaves.
+
+---
+
+## GitHub
+
+[github.com/srk0102/SCP](https://github.com/srk0102/SCP) - MIT license.

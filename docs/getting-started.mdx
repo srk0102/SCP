@@ -1,0 +1,244 @@
+---
+title: Getting Started
+description: Install SCP and run your first adapter in under 10 minutes.
+---
+
+# Getting Started
+
+You will clone the repo, start the server, and watch a working adapter learn from an LLM brain in real time.
+
+Total time: under 10 minutes.
+
+---
+
+## Prerequisites
+
+- Node.js 18 or higher
+- An AWS account with Bedrock access (for the default Nova Micro brain)
+- A terminal
+
+<Note>
+SCP works with any LLM. Bedrock Nova Micro is the default today because it costs $0.001 per brain call. OllamaBridge (free, local) and OpenAIBridge are coming in v0.2.0.
+</Note>
+
+---
+
+## Step 1: Clone and Install
+
+<Steps>
+
+### Clone the repository
+
+```bash
+git clone https://github.com/srk0102/SCP.git
+cd SCP
+```
+
+### Install server dependencies
+
+```bash
+cd server
+npm install
+cd ..
+```
+
+### Install bridge dependencies
+
+```bash
+cd client
+npm install
+cd ..
+```
+
+### Set your AWS credentials
+
+Create a `.env` file in the project root:
+
+```bash
+AWS_ACCESS_KEY_ID=your_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_here
+AWS_REGION=us-east-1
+```
+
+</Steps>
+
+<Warning>
+Never commit your `.env` file. It is already in `.gitignore`.
+</Warning>
+
+---
+
+## Step 2: Start the Server
+
+You need two terminals. One for the WebSocket bridge, one for the LLM bridge.
+
+<CodeGroup>
+
+```bash Terminal 1: WebSocket Bridge
+cd server
+node ws-bridge.js
+```
+
+```bash Terminal 2: LLM Bridge
+cd client
+node qwen-mcp-bridge.js
+```
+
+</CodeGroup>
+
+Terminal 1 starts the WebSocket server on port 7777. This is how the muscle layer talks to the MCP server.
+
+Terminal 2 starts the LLM bridge. It connects to the MCP server, polls for semantic events, and calls Nova Micro when the muscle needs help.
+
+---
+
+## Step 3: Open an Adapter
+
+Open any adapter's HTML file in your browser:
+
+<CardGroup cols={3}>
+  <Card title="Missile Defense" icon="crosshairs">
+    `adapters/aim-lab/muscle.html`
+
+    10 launchers, 4 entity types, 3 modes. The original adapter.
+  </Card>
+  <Card title="Self-Driving Car" icon="car">
+    `adapters/self-driving-car/muscle.html`
+
+    3-lane road with ambulances, obstacles, and rash drivers.
+  </Card>
+  <Card title="10-Lane Highway" icon="road">
+    `adapters/highway/muscle.html`
+
+    Divided highway with traffic signals and chaos mode.
+  </Card>
+</CardGroup>
+
+You can serve them with any static file server:
+
+```bash
+cd adapters/self-driving-car
+python -m http.server 8080
+```
+
+Then open `http://localhost:8080/muscle.html` in your browser.
+
+---
+
+## Step 4: Watch It Learn
+
+Press **Play** in the browser.
+
+Here is what happens:
+
+```
+1. Muscle detects an entity (car, missile, ambulance)
+2. Pattern store checks: have I seen this before?
+3. First time: NO → sends semantic event to brain
+4. Brain (Nova Micro) classifies: "mark_engage" or "mark_ignore" or "halt"
+5. Muscle executes the decision
+6. Pattern store logs: this situation → this decision
+7. Next time same situation: pattern store handles it locally
+8. No brain call. No cost. No latency.
+```
+
+Watch the logs. You will see brain calls drop over time:
+
+```
+Session start:  27 brain calls/min
+2 minutes in:   8 brain calls/min
+5 minutes in:   1 brain call/min
+10 minutes in:  0 brain calls/min
+```
+
+**Brain teaches once. Muscle remembers forever.**
+
+---
+
+## What Just Happened
+
+You ran three separate processes:
+
+```
+WebSocket Bridge (port 7777)
+    ↕
+MCP Server (stdio, inside bridge process)
+    ↕
+LLM Bridge (polls MCP server, calls Nova Micro)
+```
+
+The browser adapter connects to the WebSocket bridge and sends world state updates. When the muscle encounters an unknown entity, it emits a semantic event. The bridge picks it up, prefetches world state, and calls the LLM. The LLM returns an intent (like `mark_engage`). The muscle executes it and the pattern store caches it.
+
+The next time the muscle sees the same situation, the pattern store handles it in 0.1ms. No brain call needed.
+
+---
+
+## The Three Files
+
+Every adapter is exactly three files:
+
+| File | Purpose |
+|------|---------|
+| `embodiment.json` | Describes the body: actuators, sensors, constraints, workspace |
+| `muscle.js` | Physics, rendering, sensor logic, pattern store lookups |
+| `system-prompt.md` | Tells the brain what entities mean and how to classify them |
+
+The protocol, server, and bridge are shared. You only write the adapter.
+
+---
+
+## The Cost
+
+Nova Micro costs $0.001 per brain call.
+
+A typical first session uses about 125 brain calls. That is $0.125 total.
+
+By session 3 or 4, brain calls drop to near zero. The pattern store handles everything.
+
+```
+Total cost to train a new adapter: under $0.20
+Ongoing cost after learning: $0.00
+```
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Core Concepts" icon="brain" href="/concepts">
+    Understand the three layers, the inversion, and why muscle asks brain instead of the other way around.
+  </Card>
+  <Card title="Write Your Own Adapter" icon="code" href="/adapter">
+    Build a new body from scratch. Three files, one contract.
+  </Card>
+  <Card title="Pattern Store Deep Dive" icon="database" href="/pattern-store">
+    How similarity matching, confidence scoring, and exploration rate work under the hood.
+  </Card>
+  <Card title="Bridges" icon="plug" href="/bridges">
+    Which LLM providers are supported and how to bring your own.
+  </Card>
+</CardGroup>
+
+---
+
+## Troubleshooting
+
+<Accordion title="WebSocket connection refused on port 7777">
+Make sure Terminal 1 (`node ws-bridge.js`) is running before you open the browser adapter. The muscle layer connects to `ws://localhost:7777` on load.
+</Accordion>
+
+<Accordion title="Bridge says 'waiting for muscle to connect'">
+The bridge polls for embodiments. Open the browser adapter first, then the bridge will detect it within a few seconds.
+</Accordion>
+
+<Accordion title="AWS credentials error">
+Check your `.env` file. You need `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` set. The region must have Bedrock access enabled for Nova Micro (`amazon.nova-micro-v1:0`).
+</Accordion>
+
+<Accordion title="No brain calls happening">
+If the pattern store already has cached decisions from a previous session (via localStorage), it will handle entities locally without calling the brain. Clear your browser's localStorage for that adapter to force fresh brain calls.
+</Accordion>
+
+<Accordion title="Can I use a different LLM?">
+Today, only the Bedrock bridge exists. OllamaBridge (free, local, zero cost) and OpenAIBridge are the next things being built. You can also extend `SCPBridge` yourself to connect any LLM. See [Bridges](/bridges).
+</Accordion>

@@ -1,95 +1,36 @@
-// SCP Pattern Store — muscle memory layer
-// Caches brain decisions locally. Validates before replaying.
-// Brain calls shrink over sessions as the cache fills.
+// SCP Pattern Store -- aim-lab adapter (missile defense)
+// Thin wrapper over scp-core PatternStore with domain-specific features.
+// Brain teaches once. Muscle remembers forever.
 
-const CONFIDENCE_THRESHOLD = 3;
-const MAX_PATTERNS = 500;
+import { PatternStore } from "../../packages/scp-core/pattern-store.mjs";
 
-class PatternStore {
-  constructor() {
-    this.patterns = new Map();
-    this.hits = 0;
-    this.misses = 0;
-  }
+const store = new PatternStore({
+  confidenceThreshold: 0.15,  // ~3 out of 20 (matches original threshold of 3)
+  maxPatterns: 500,
+  explorationRate: 0.1,
+  storage: "localStorage",
+  storageKey: "scp_patterns",
+  featureExtractor: (entity) => ({
+    has_heat: entity.has_heat,
+    direction: Math.abs(entity.vx) > Math.abs(entity.vy) ? "horizontal" : "vertical",
+    speed_bucket: Math.round(Math.hypot(entity.vx, entity.vy) / 20) * 20,
+    y_bucket: Math.round(entity.y / 150) * 150,
+  }),
+});
 
-  features(entity) {
-    return {
-      has_heat: entity.has_heat,
-      direction: Math.abs(entity.vx) > Math.abs(entity.vy) ? "horizontal" : "vertical",
-      speed_bucket: Math.round(Math.hypot(entity.vx, entity.vy) / 20) * 20,
-      y_bucket: Math.round(entity.y / 150) * 150,
-    };
-  }
-
-  hash(f) {
-    return `${f.has_heat}_${f.direction}_${f.speed_bucket}_${f.y_bucket}`;
-  }
-
+// Backward-compatible wrapper: lookup returns decision string or null
+export const patternStore = {
   lookup(entity) {
-    const h = this.hash(this.features(entity));
-    const p = this.patterns.get(h);
-    if (!p || p.count < CONFIDENCE_THRESHOLD) {
-      this.misses++;
-      return null;
-    }
-    this.hits++;
-    return p.decision;
-  }
-
-  learn(entity, decision) {
-    const h = this.hash(this.features(entity));
-    const existing = this.patterns.get(h);
-    if (!existing) {
-      this.patterns.set(h, { decision, count: 1 });
-      if (this.patterns.size > MAX_PATTERNS) {
-        const first = this.patterns.keys().next().value;
-        this.patterns.delete(first);
-      }
-      return;
-    }
-    if (existing.decision === decision) {
-      existing.count = Math.min(existing.count + 1, 20);
-    } else {
-      existing.count = 1;
-      existing.decision = decision;
-    }
-  }
-
-  correct(entity, brain_decision) {
-    const h = this.hash(this.features(entity));
-    const p = this.patterns.get(h);
-    if (p && p.decision !== brain_decision) {
-      p.count = 1;
-      p.decision = brain_decision;
-    }
-  }
-
-  save() {
-    const obj = {};
-    for (const [k, v] of this.patterns) obj[k] = v;
-    localStorage.setItem("scp_patterns", JSON.stringify(obj));
-  }
-
-  load() {
-    try {
-      const raw = localStorage.getItem("scp_patterns");
-      if (!raw) return;
-      const obj = JSON.parse(raw);
-      for (const [k, v] of Object.entries(obj)) {
-        this.patterns.set(k, v);
-      }
-      console.log(`[pattern-store] loaded ${this.patterns.size} patterns`);
-    } catch {}
-  }
-
-  stats() {
-    return {
-      total: this.patterns.size,
-      confident: [...this.patterns.values()].filter(p => p.count >= CONFIDENCE_THRESHOLD).length,
-      hits: this.hits,
-      misses: this.misses,
-    };
-  }
-}
-
-export const patternStore = new PatternStore();
+    const result = store.lookup(entity);
+    return result ? result.decision : null;
+  },
+  learn(entity, decision) { store.learn(entity, decision); },
+  correct(entity, brainDecision) { store.correct(entity, brainDecision); },
+  save() { store.save(); },
+  load() { store.load(); },
+  stats() { return store.stats(); },
+  features(entity) { return store.features(entity); },
+  hash(f) { return store.hash(f); },
+  // Expose the underlying store for advanced usage
+  _store: store,
+};
