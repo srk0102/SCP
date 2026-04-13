@@ -20,7 +20,12 @@
     "./bridge": {
       "import": "./bridge.mjs",
       "require": "./bridge.js"
-    }
+    },
+    "./bridges/bedrock": "./bridges/bedrock.js",
+    "./bridges/ollama": "./bridges/ollama.js",
+    "./bridges/openai": "./bridges/openai.js",
+    "./transports/websocket": "./transports/websocket.js",
+    "./transports/http": "./transports/http.js"
   },
   "keywords": [
     "scp",
@@ -61,6 +66,8 @@
     "adapter.js",
     "adapter.mjs",
     "bridge.js",
-    "bridge.mjs"
+    "bridge.mjs",
+    "bridges/",
+    "transports/"
   ]
 }

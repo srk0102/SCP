@@ -1,0 +1,24 @@
+{
+  "embodiment_id": "patrol-drone-v1",
+  "scp_version": "0.1.0",
+  "dimensions": "2d",
+  "label": "Perimeter patrol drone",
+  "actuators": [
+    {
+      "actuator_id": "drone_0",
+      "rest_position": [0, 0],
+      "reach": 500,
+      "max_velocity": 10
+    }
+  ],
+  "sensors": ["camera", "thermal", "radar"],
+  "workspace": {
+    "min": [-500, -500],
+    "max": [500, 500]
+  },
+  "constraints": {
+    "max_altitude": 100,
+    "battery_minutes": 30,
+    "no_fly_zones": []
+  }
+}
