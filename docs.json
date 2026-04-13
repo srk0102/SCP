@@ -2,51 +2,58 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "SCP",
-  "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "favicon": "/favicon.svg",
   "colors": {
     "primary": "#4F46E5",
     "light": "#818CF8",
     "dark": "#4F46E5"
   },
-  "background": {
-    "decoration": "gradient",
-    "color": {
-      "light": "#F8FAFC",
-      "dark": "#0F0F1A"
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/srk0102/SCP",
+          "icon": "github"
+        },
+        {
+          "anchor": "npm",
+          "href": "https://npmjs.com/package/scp-protocol",
+          "icon": "npm"
+        }
+      ]
     }
   },
   "navbar": {
     "links": [
       {
-        "type": "github",
+        "label": "GitHub",
         "href": "https://github.com/srk0102/SCP"
-      },
-      {
-        "label": "npm",
-        "href": "https://npmjs.com/package/scp-protocol"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "/docs/getting-started"
+      "href": "/getting-started"
     }
-  },
-  "navigation": {
-    "groups": [
-      {
-        "group": "Get Started",
-        "pages": [
-          "docs/introduction",
-          "docs/getting-started"
-        ]
-      }
-    ]
   },
   "footer": {
     "socials": {
