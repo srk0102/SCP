@@ -16,6 +16,9 @@
   <a href="https://srk-e37e8aa3.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-818CF8" alt="docs"/></a>
 </p>
 
+> Any LLM. Any body. Zero training.
+> Brain calls dropped from 27 to 0 across 5 adapters including real MuJoCo physics.
+
 ---
 
 ## What SCP does
@@ -50,11 +53,31 @@ Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
 
 ![SCP Architecture](assets/architecture.svg)
 
+## Standing on shoulders
+
+SCP builds on Subsumption Architecture (Rodney Brooks, 1986), which first proposed splitting robot control into fast bottom-up layers rather than slow top-down reasoning.
+
+What SCP adds for the LLM era:
+- Any LLM as the brain layer. Zero training required.
+- Open protocol. Three files to write an adapter.
+- Pattern store that learns from LLM decisions.
+- Cost drops to near zero over time.
+
 ---
 
-## Five adapters, same brain
+## Five adapters, same brain, same protocol
 
 ![Adapter Proof](assets/adapters-proof.svg)
+
+| Adapter | Physics | Brain calls | Cache rate |
+|---|---|---|---|
+| Missile Defense | Canvas 2D | 27 -> 0/min | ~100% |
+| Self-Driving Car | Canvas 2D | drops to 0-3 | ~90% |
+| 10-Lane Highway | Canvas 2D | drops over time | ~90% |
+| MuJoCo Cart-Pole | Real physics | 27 -> 0 | 89% |
+| MuJoCo Ant | Real physics | 60 -> 6 | 85% |
+
+Same Nova Micro. Same bridge. Same protocol. Zero code changes between adapters.
 
 ---
 
