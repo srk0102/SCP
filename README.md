@@ -195,4 +195,4 @@ The bridge, server, and protocol require zero changes.
 
 ## License
 
-MIT -- [srk0102](https://github.com/srk0102)
+[MIT](LICENSE) -- [srk0102](https://github.com/srk0102)
