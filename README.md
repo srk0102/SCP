@@ -6,7 +6,24 @@
 
 ---
 
-## Demos
+## MuJoCo Cart-Pole: Real Physics, Brain Learns to Zero
+
+https://github.com/user-attachments/assets/mujoco-cartpole-demo.mp4
+
+Real MuJoCo physics. Real joint constraints. The brain starts at 31 calls/loop. By loop 24, it drops to 1. The pole stays balanced. The muscle learned.
+
+```
+Loop  1: brain=31  cache=119  reflex=43   <- brain handles most decisions
+Loop  5: brain= 5  cache=153  reflex=35   <- cache taking over
+Loop 12: brain= 4  cache=148  reflex=40   <- muscle learned
+Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
+```
+
+Three layers visible: **reflex** catches emergency tilts, **cache** replays learned balance, **brain** only fires for new situations.
+
+---
+
+## More Demos
 
 <table>
 <tr>
