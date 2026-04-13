@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/logo.svg" width="80" height="80" alt="SCP Logo"/>
+  <img src="assets/logo.svg" width="140" height="140" alt="SCP Logo"/>
 </p>
 
-<h1 align="center">SCP -- Spatial Context Protocol</h1>
+<h1 align="center">Spatial Context Protocol</h1>
 
 <p align="center">
-  <strong>MCP connects a brain to information. SCP connects a brain to a body that's already moving.</strong>
+  Real-time AI execution runtime for embodied systems.
   <br/>
-  <em>In MCP the brain asks. In SCP the muscle asks.</em>
+  <strong>In MCP the brain asks. In SCP the muscle asks.</strong>
 </p>
 
 <p align="center">
@@ -18,11 +18,24 @@
 
 ---
 
-## MuJoCo Cart-Pole: Real Physics, Brain Learns to Zero
+## What SCP does
+
+SCP connects any LLM to any body -- physical or virtual -- without retraining. The body runs at 60fps. The brain sleeps until needed. Brain calls drop to near-zero as the muscle learns.
+
+| | MCP | SCP |
+|---|---|---|
+| **Who initiates** | Brain asks, tool answers | Body acts, brain advises |
+| **Body** | Passive (waits) | Active (runs at 60fps) |
+| **Memory** | None | Pattern store replays brain decisions |
+| **Cost over time** | Constant | Drops to near zero |
+
+---
+
+## Demo: MuJoCo cart-pole (real physics)
 
 [![Watch the demo](https://res.cloudinary.com/still-studying/video/upload/so_3/Screen_Recording_2026-04-13_010202_qlnftl.jpg)](https://res.cloudinary.com/still-studying/video/upload/Screen_Recording_2026-04-13_010202_qlnftl.mp4)
 
-*Click to watch* -- Real MuJoCo physics. Real joint constraints. The brain starts at 31 calls/loop. By loop 24, it drops to 1. The pole stays balanced. The muscle learned.
+*Click to watch.* Real MuJoCo physics. Real joint constraints. Brain learns to balance the pole, then goes silent.
 
 ```
 Loop  1: brain=31  cache=119  reflex=43   <- brain handles most decisions
@@ -30,47 +43,6 @@ Loop  5: brain= 5  cache=153  reflex=35   <- cache taking over
 Loop 12: brain= 4  cache=148  reflex=40   <- muscle learned
 Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
 ```
-
-Three layers visible: **reflex** catches emergency tilts, **cache** replays learned balance, **brain** only fires for new situations.
-
----
-
-## More Demos
-
-<table>
-<tr>
-<td width="50%" align="center">
-
-### Missile Defense
-
-[![Missile Defense Demo](assets/missile-defense-thumb.png)](assets/missile-defense.mp4)
-
-*Click to watch video* | 10 launchers defending a border. Muscle fires on heat. Brain classifies stealth missiles and vetoes planes.
-
-</td>
-<td width="50%" align="center">
-
-### Self-Driving Car
-
-[![Self-Driving Car Demo](assets/car-simulation-thumb.png)](assets/car-simulation.mp4)
-
-*Click to watch video* | 3-lane road with traffic, ambulances, obstacles. Same brain, different body. Zero protocol changes.
-
-</td>
-</tr>
-</table>
-
----
-
-## What SCP adds to MCP
-
-| | MCP | SCP |
-|---|---|---|
-| **Who initiates** | Brain asks, tool answers | Body acts, brain advises |
-| **Body behavior** | Passive (waits for brain) | Active (runs at 60fps) |
-| **Events** | Pull only | Body pushes events up |
-| **Memory** | None | Pattern store replays past brain decisions |
-| **Latency** | Every action waits for LLM | Muscle handles 99%, brain handles 1% |
 
 ---
 
@@ -80,43 +52,61 @@ Three layers visible: **reflex** catches emergency tilts, **cache** replays lear
 
 ---
 
-## SDK
+## Five adapters, same brain
+
+![Adapter Proof](assets/adapters-proof.svg)
+
+---
+
+## Install
 
 ```bash
 npm install scp-protocol
 ```
 
-The SDK (`packages/scp-core/`) exports:
+```javascript
+const { PatternStore, SCPAdapter, OllamaBridge } = require('scp-protocol')
 
-| Module | What it does |
-|--------|-------------|
-| **PatternStore** | Muscle memory with similarity matching, confidence scoring, exploration rate |
-| **SCPAdapter** | Base class for any body, with reflex layer |
-| **SCPBridge** | Base class for any LLM provider |
-| **BedrockBridge** | AWS Nova Micro, Claude via Bedrock |
-| **OllamaBridge** | Local models (llama3.2, mistral), free |
-| **OpenAIBridge** | GPT-4o, GPT-4o-mini |
-| **WebSocketTransport** | Browser and desktop adapters |
-| **HTTPTransport** | Hardware adapters (Raspberry Pi, ESP32) |
+const store = new PatternStore({
+  featureExtractor: (entity) => ({
+    kind: entity.kind,
+    speed: entity.speed > 5 ? 'fast' : 'slow',
+  }),
+})
+
+// Reflex: fires in 0-5ms, before cache or brain
+adapter.reflex('emergency', (state) => {
+  if (state.distance < 5) return true
+})
+
+// Muscle loop
+const cached = store.lookup(entity)
+if (cached) {
+  execute(cached.decision)        // cache hit: 0.1ms, $0
+} else {
+  const d = await brain.invoke(e) // cache miss: ask brain
+  store.learn(entity, d)          // learn for next time
+}
+```
 
 76 tests. Zero external services. SQLite ships bundled.
 
 ---
 
-## How to run
+## Quick start
 
 ```bash
-# Terminal 1 -- serve an adapter
+git clone https://github.com/srk0102/SCP.git && cd SCP
+
+# Terminal 1: serve an adapter
 cd adapters/self-driving-car && python -m http.server 8080
 
-# Terminal 2 -- start the bridge (spawns MCP server internally)
+# Terminal 2: start the bridge
 cd bridge
 PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node qwen-mcp-bridge.js
 ```
 
-Open `http://localhost:8080/muscle.html`. Select SCP mode. Press Play.
-
-**Requirements:** Node.js 18+, AWS Bedrock access (Nova Micro), `.env` with AWS credentials.
+Open `http://localhost:8080/muscle.html`. Press Play.
 
 ---
 
@@ -124,31 +114,21 @@ Open `http://localhost:8080/muscle.html`. Select SCP mode. Press Play.
 
 ```
 SCP/
-  schema/             Frozen protocol (v0.1.0)
-  server/             MCP server + WebSocket bridge
-  bridge/             LLM bridge (Bedrock Nova Micro)
+  schema/                 Frozen protocol (v0.1.0)
+  server/                 MCP server + WebSocket bridge
+  bridge/                 LLM bridge (Bedrock Nova Micro)
   adapters/
-    aim-lab/          Missile defense (10 launchers)
-    self-driving-car/ 3-lane road
-    highway/          10-lane divided highway
-  packages/
-    scp-core/         npm package (scp-protocol)
-      bridges/        Bedrock, Ollama, OpenAI
-      transports/     WebSocket, HTTP
-      tests/          76 tests
-  examples/
-    drone-patrol/     Simulation example
-  assets/             Demo videos and thumbnails
-  PLAN.md             Master development plan
+    aim-lab/              Missile defense
+    self-driving-car/     3-lane road
+    highway/              10-lane highway
+    mujoco-cartpole/      Cart-pole (Python + MuJoCo)
+    mujoco-ant/           Quadruped ant (Python + MuJoCo)
+  packages/scp-core/      npm package
+    bridges/              Bedrock, Ollama, OpenAI
+    transports/           WebSocket, HTTP
+    tests/                76 tests, 0 failures
+  examples/drone-patrol/  Node.js simulation
 ```
-
----
-
-## Five adapters, same brain
-
-![Adapter Proof](assets/adapters-proof.svg)
-
-Same server. Same bridge. Same protocol. Two languages. Zero code changes between adapters.
 
 ---
 
@@ -163,7 +143,24 @@ adapters/your-body/
   system-prompt.md   -- tell the brain what to classify
 ```
 
-The bridge, MCP server, and protocol require zero changes.
+The bridge, server, and protocol require zero changes.
+
+---
+
+## More demos
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="assets/missile-defense.mp4"><img src="assets/missile-defense-thumb.png" width="280" alt="Missile Defense"/></a>
+<br/><sub>Missile Defense -- 10 launchers, brain classifies stealth</sub>
+</td>
+<td width="50%" align="center">
+<a href="assets/car-simulation.mp4"><img src="assets/car-simulation-thumb.png" width="280" alt="Self-Driving Car"/></a>
+<br/><sub>Self-Driving Car -- ambulance yield, obstacle avoidance</sub>
+</td>
+</tr>
+</table>
 
 ---
 
@@ -173,12 +170,6 @@ The bridge, MCP server, and protocol require zero changes.
 - **npm:** https://npmjs.com/package/scp-protocol
 - **AnimTOON-3B:** https://huggingface.co/srk0102/AnimTOON-3B
 
----
-
 ## License
 
-MIT
-
-## Built by
-
-[srk0102](https://github.com/srk0102)
+MIT -- [srk0102](https://github.com/srk0102)
