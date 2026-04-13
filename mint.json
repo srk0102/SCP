@@ -30,7 +30,7 @@
   ],
   "topbarCtaButton": {
     "name": "Get Started",
-    "url": "/getting-started"
+    "url": "/docs/getting-started"
   },
   "anchors": [
     {
@@ -47,7 +47,7 @@
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["introduction", "getting-started"]
+      "pages": ["docs/introduction", "docs/getting-started"]
     }
   ],
   "footerSocials": {
