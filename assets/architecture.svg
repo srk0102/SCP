@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <filter id="glow-brain">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#4F46E5" flood-opacity="0.3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-proto">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#7C3AED" flood-opacity="0.3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-muscle">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#0F766E" flood-opacity="0.3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0F0F1A"/>
+
+  <!-- Brain Box -->
+  <rect x="300" y="40" width="600" height="120" rx="12" fill="#4F46E5" filter="url(#glow-brain)"/>
+  <text x="600" y="82" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="24" font-weight="700">BRAIN (LLM)</text>
+  <text x="600" y="112" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="15">classifies · strategizes · decides</text>
+  <rect x="810" y="55" width="80" height="28" rx="14" fill="rgba(0,0,0,0.3)"/>
+  <text x="850" y="74" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="12" font-weight="600">500ms-3s</text>
+
+  <!-- Arrows: Brain <-> Protocol -->
+  <!-- Down arrow (intents) -->
+  <line x1="520" y1="160" x2="520" y2="230" stroke="#818CF8" stroke-width="2"/>
+  <polygon points="520,240 514,228 526,228" fill="#818CF8"/>
+  <text x="505" y="200" text-anchor="end" fill="#818CF8" font-family="system-ui, sans-serif" font-size="13">intents</text>
+
+  <!-- Up arrow (semantic events) -->
+  <line x1="680" y1="230" x2="680" y2="160" stroke="#818CF8" stroke-width="2"/>
+  <polygon points="680,160 674,172 686,172" fill="#818CF8"/>
+  <text x="695" y="200" text-anchor="start" fill="#818CF8" font-family="system-ui, sans-serif" font-size="13">semantic events</text>
+
+  <!-- Protocol Box -->
+  <rect x="300" y="240" width="600" height="120" rx="12" fill="#7C3AED" filter="url(#glow-proto)"/>
+  <text x="600" y="282" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="24" font-weight="700">SCP PROTOCOL</text>
+  <text x="600" y="312" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="15">embodiment handshake · semantic events · routing</text>
+  <rect x="810" y="255" width="80" height="28" rx="14" fill="rgba(0,0,0,0.3)"/>
+  <text x="850" y="274" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="12" font-weight="600">milliseconds</text>
+
+  <!-- Arrows: Protocol <-> Muscle -->
+  <!-- Down arrow (commands) -->
+  <line x1="520" y1="360" x2="520" y2="430" stroke="#818CF8" stroke-width="2"/>
+  <polygon points="520,440 514,428 526,428" fill="#818CF8"/>
+  <text x="505" y="400" text-anchor="end" fill="#818CF8" font-family="system-ui, sans-serif" font-size="13">commands</text>
+
+  <!-- Up arrow (world state) -->
+  <line x1="680" y1="430" x2="680" y2="360" stroke="#818CF8" stroke-width="2"/>
+  <polygon points="680,360 674,372 686,372" fill="#818CF8"/>
+  <text x="695" y="400" text-anchor="start" fill="#818CF8" font-family="system-ui, sans-serif" font-size="13">world state</text>
+
+  <!-- Muscle Box -->
+  <rect x="300" y="440" width="600" height="120" rx="12" fill="#0F766E" filter="url(#glow-muscle)"/>
+  <text x="600" y="482" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="24" font-weight="700">MUSCLE (adapter)</text>
+  <text x="600" y="512" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="15">reflex · pattern store · physics · 60fps</text>
+  <rect x="793" y="455" width="107" height="28" rx="14" fill="rgba(0,0,0,0.3)"/>
+  <text x="846" y="474" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="12" font-weight="600">always running</text>
+
+  <!-- Footer -->
+  <circle cx="480" cy="600" r="10" fill="none" stroke="#818CF8" stroke-width="1.5"/>
+  <text x="480" y="604" text-anchor="middle" fill="#818CF8" font-family="system-ui, sans-serif" font-size="10">G</text>
+  <text x="500" y="604" text-anchor="start" fill="rgba(255,255,255,0.4)" font-family="system-ui, sans-serif" font-size="13">Ganglion Pattern</text>
+  <text x="750" y="604" text-anchor="start" fill="#818CF8" font-family="monospace" font-size="14">npm install scp-protocol</text>
+</svg>

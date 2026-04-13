@@ -1,8 +1,20 @@
-# SCP -- Spatial Context Protocol
+<p align="center">
+  <img src="assets/logo.svg" width="80" height="80" alt="SCP Logo"/>
+</p>
 
-**MCP connects a brain to information. SCP connects a brain to a body that's already moving.**
+<h1 align="center">SCP -- Spatial Context Protocol</h1>
 
-**In MCP the brain asks. In SCP the muscle asks.**
+<p align="center">
+  <strong>MCP connects a brain to information. SCP connects a brain to a body that's already moving.</strong>
+  <br/>
+  <em>In MCP the brain asks. In SCP the muscle asks.</em>
+</p>
+
+<p align="center">
+  <a href="https://npmjs.com/package/scp-protocol"><img src="https://img.shields.io/npm/v/scp-protocol?color=4F46E5&label=npm" alt="npm"/></a>
+  <a href="https://github.com/srk0102/SCP"><img src="https://img.shields.io/github/license/srk0102/SCP?color=818CF8" alt="license"/></a>
+  <a href="https://srk-e37e8aa3.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-818CF8" alt="docs"/></a>
+</p>
 
 ---
 
@@ -64,11 +76,7 @@ Three layers visible: **reflex** catches emergency tilts, **cache** replays lear
 
 ## Architecture
 
-```
-Brain (LLM)       -- classifies, strategizes, decides (seconds)
-Protocol (SCP)    -- messenger between brain and muscle (milliseconds)
-Muscle (adapter)  -- acts, reacts, remembers (60fps, always running)
-```
+![SCP Architecture](assets/architecture.svg)
 
 ---
 
@@ -136,15 +144,11 @@ SCP/
 
 ---
 
-## Three adapters, same brain
+## Five adapters, same brain
 
-| Adapter | Body | What it proves |
-|---|---|---|
-| **Missile Defense** | 10 launchers, 4 entity types | Brain classifies stealth + vetoes planes |
-| **Self-Driving Car** | Car on 3-lane road | Ambulance yield, obstacle avoidance |
-| **10-Lane Highway** | 5+5 lane divided highway | Traffic signals, chaos mode |
+![Adapter Proof](assets/adapters-proof.svg)
 
-Same server. Same bridge. Same Nova Micro. Zero code changes between adapters.
+Same server. Same bridge. Same protocol. Two languages. Zero code changes between adapters.
 
 ---
 

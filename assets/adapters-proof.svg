@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <clipPath id="table-clip">
+      <rect x="100" y="130" width="1000" height="390" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0F0F1A"/>
+
+  <!-- Header -->
+  <text x="600" y="55" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="32" font-weight="800">5 ADAPTERS. SAME BRAIN. SAME PROTOCOL.</text>
+  <text x="600" y="90" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="system-ui, sans-serif" font-size="16">Two languages. Five bodies. Brain calls drop to zero in all cases.</text>
+
+  <!-- Table container -->
+  <rect x="100" y="130" width="1000" height="390" rx="12" fill="none" stroke="#333344" stroke-width="1"/>
+
+  <!-- Column headers -->
+  <rect x="100" y="130" width="1000" height="50" rx="12" fill="#4F46E5"/>
+  <!-- Fix bottom corners of header -->
+  <rect x="100" y="155" width="1000" height="25" fill="#4F46E5"/>
+
+  <text x="160" y="162" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Adapter</text>
+  <text x="460" y="162" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Physics</text>
+  <text x="660" y="162" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Brain Calls</text>
+  <text x="900" y="162" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Cache Rate</text>
+
+  <!-- Row 1: Missile Defense -->
+  <rect x="100" y="180" width="1000" height="60" fill="#13132a"/>
+  <text x="160" y="216" fill="white" font-family="system-ui, sans-serif" font-size="16">Missile Defense</text>
+  <text x="460" y="216" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="15">Canvas 2D</text>
+  <text x="660" y="216" fill="white" font-family="system-ui, sans-serif" font-size="15">27/min -> 0/min</text>
+  <text x="900" y="216" fill="#10B981" font-family="system-ui, sans-serif" font-size="16" font-weight="700">~100%</text>
+
+  <!-- Row 2: Self-Driving Car -->
+  <rect x="100" y="240" width="1000" height="60" fill="#0F0F1A"/>
+  <text x="160" y="276" fill="white" font-family="system-ui, sans-serif" font-size="16">Self-Driving Car</text>
+  <text x="460" y="276" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="15">Canvas 2D</text>
+  <text x="660" y="276" fill="white" font-family="system-ui, sans-serif" font-size="15">drops to 0-3</text>
+  <text x="900" y="276" fill="#10B981" font-family="system-ui, sans-serif" font-size="16" font-weight="700">~90%</text>
+
+  <!-- Row 3: 10-Lane Highway -->
+  <rect x="100" y="300" width="1000" height="60" fill="#13132a"/>
+  <text x="160" y="336" fill="white" font-family="system-ui, sans-serif" font-size="16">10-Lane Highway</text>
+  <text x="460" y="336" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="15">Canvas 2D</text>
+  <text x="660" y="336" fill="white" font-family="system-ui, sans-serif" font-size="15">drops over time</text>
+  <text x="900" y="336" fill="#10B981" font-family="system-ui, sans-serif" font-size="16" font-weight="700">~90%</text>
+
+  <!-- Row 4: MuJoCo Cart-Pole (highlighted) -->
+  <rect x="100" y="360" width="1000" height="60" fill="#1a1a2e"/>
+  <text x="160" y="396" fill="white" font-family="system-ui, sans-serif" font-size="16" font-weight="700">MuJoCo Cart-Pole</text>
+  <text x="460" y="396" fill="white" font-family="system-ui, sans-serif" font-size="15">Real Physics</text>
+  <rect x="555" y="382" width="90" height="22" rx="11" fill="#10B981"/>
+  <text x="600" y="397" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="11" font-weight="700">REAL PHYSICS</text>
+  <text x="660" y="396" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">27 -> 0</text>
+  <text x="900" y="396" fill="#10B981" font-family="system-ui, sans-serif" font-size="16" font-weight="700">89%</text>
+
+  <!-- Row 5: MuJoCo Ant (highlighted) -->
+  <rect x="100" y="420" width="1000" height="60" fill="#1a1a2e"/>
+  <!-- Bottom corners -->
+  <rect x="100" y="460" width="1000" height="20" rx="0" fill="#1a1a2e"/>
+  <rect x="100" y="508" width="12" height="12" fill="#0F0F1A"/>
+  <rect x="1088" y="508" width="12" height="12" fill="#0F0F1A"/>
+  <text x="160" y="456" fill="white" font-family="system-ui, sans-serif" font-size="16" font-weight="700">MuJoCo Ant</text>
+  <text x="460" y="456" fill="white" font-family="system-ui, sans-serif" font-size="15">Real Physics</text>
+  <rect x="555" y="442" width="90" height="22" rx="11" fill="#10B981"/>
+  <text x="600" y="457" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="11" font-weight="700">REAL PHYSICS</text>
+  <text x="660" y="456" fill="white" font-family="system-ui, sans-serif" font-size="15" font-weight="700">60 -> 6</text>
+  <text x="900" y="456" fill="#10B981" font-family="system-ui, sans-serif" font-size="16" font-weight="700">85%</text>
+
+  <!-- Table border bottom -->
+  <rect x="100" y="130" width="1000" height="390" rx="12" fill="none" stroke="#333344" stroke-width="1"/>
+
+  <!-- Footer -->
+  <text x="600" y="565" text-anchor="middle" fill="#818CF8" font-family="system-ui, sans-serif" font-size="20" font-style="italic">Brain teaches once. Muscle remembers forever.</text>
+
+  <!-- npm badge -->
+  <text x="1050" y="608" text-anchor="end" fill="#4F46E5" font-family="monospace" font-size="14">npm install scp-protocol</text>
+</svg>
