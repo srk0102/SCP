@@ -1,0 +1,26 @@
+{
+  "embodiment_id": "mujoco-ant-v1",
+  "scp_version": "0.1.0",
+  "dimensions": "3d",
+  "label": "MuJoCo quadruped ant",
+  "actuators": [
+    { "actuator_id": "fr_hip", "rest_position": [0, 0], "reach": 30, "max_velocity": 5 },
+    { "actuator_id": "fr_ankle", "rest_position": [0, 0], "reach": 70, "max_velocity": 5 },
+    { "actuator_id": "fl_hip", "rest_position": [0, 0], "reach": 30, "max_velocity": 5 },
+    { "actuator_id": "fl_ankle", "rest_position": [0, 0], "reach": 70, "max_velocity": 5 },
+    { "actuator_id": "br_hip", "rest_position": [0, 0], "reach": 30, "max_velocity": 5 },
+    { "actuator_id": "br_ankle", "rest_position": [0, 0], "reach": 70, "max_velocity": 5 },
+    { "actuator_id": "bl_hip", "rest_position": [0, 0], "reach": 30, "max_velocity": 5 },
+    { "actuator_id": "bl_ankle", "rest_position": [0, 0], "reach": 70, "max_velocity": 5 }
+  ],
+  "sensors": ["joint_position", "joint_velocity", "body_height", "body_velocity", "contact"],
+  "workspace": {
+    "min": [-50, -50],
+    "max": [50, 50]
+  },
+  "constraints": {
+    "max_torque": 150,
+    "joint_limits_deg": { "hip": [-30, 30], "ankle": [-70, 70] },
+    "timestep_sec": 0.02
+  }
+}

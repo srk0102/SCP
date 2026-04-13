@@ -5,4 +5,7 @@ packets.jsonl
 runs/
 *.log
 .DS_Store
+__pycache__/
+*.pyc
+patterns.json
 PLAN.md
