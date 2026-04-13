@@ -14,7 +14,7 @@
 
 ### Missile Defense
 
-[![Missile Defense Demo](image/README/missile-defense-thumb.png)](videos/missle%20launching%20system.mp4)
+[![Missile Defense Demo](assets/missile-defense-thumb.png)](assets/missile-defense.mp4)
 
 *Click to watch video* | 10 launchers defending a border. Muscle fires on heat. Brain classifies stealth missiles and vetoes planes.
 
@@ -23,7 +23,7 @@
 
 ### Self-Driving Car
 
-[![Self-Driving Car Demo](image/README/car-simulation-thumb.png)](videos/car-simulation.mp4)
+[![Self-Driving Car Demo](assets/car-simulation-thumb.png)](assets/car-simulation.mp4)
 
 *Click to watch video* | 3-lane road with traffic, ambulances, obstacles. Same brain, different body. Zero protocol changes.
 
@@ -33,15 +33,7 @@
 
 ---
 
-## The Problem
-
-Every LLM-controlled robot, character, or vehicle today is welded shut. The brain is custom-trained for one body. Swap the body, rebuild everything from scratch.
-
-There is no open protocol that lets any LLM control any body -- physical or virtual -- without retraining. SCP is that protocol.
-
----
-
-## What SCP Adds to MCP
+## What SCP adds to MCP
 
 | | MCP | SCP |
 |---|---|---|
@@ -50,12 +42,6 @@ There is no open protocol that lets any LLM control any body -- physical or virt
 | **Events** | Pull only | Body pushes events up |
 | **Memory** | None | Pattern store replays past brain decisions |
 | **Latency** | Every action waits for LLM | Muscle handles 99%, brain handles 1% |
-
-**Three additions:**
-
-1. **Embodiment Handshake** -- Body sends JSON description on connect. Swap the body, swap the JSON. Zero retraining.
-2. **Semantic Events** -- Body pushes events UP without being asked. Brain wakes only when muscle can't handle something.
-3. **Muscle Layer** -- Body runs at 60fps. Brain's tool call drops into a system that's already moving.
 
 ---
 
@@ -67,49 +53,6 @@ Protocol (SCP)    -- messenger between brain and muscle (milliseconds)
 Muscle (adapter)  -- acts, reacts, remembers (60fps, always running)
 ```
 
-The muscle acts first. When it can't decide, it takes a safe default action and asks the brain async. The brain responds, the muscle adjusts. The pattern store replays past brain decisions so it never asks twice.
-
----
-
-## Results: Missile Defense
-
-| Mode | Heat missiles | Stealth missiles | Friendly fire | Brain calls/min |
-|---|---|---|---|---|
-| No-brainer (sensors only) | Intercepted | All missed | Shoots planes | 0 |
-| Brainer (LLM only) | Most missed (too slow) | Some caught | None | 60+ |
-| **SCP (muscle + brain)** | **Intercepted** | **Brain classifies, muscle fires** | **Vetoed** | **15-27** |
-
-## Results: Self-Driving Car
-
-| Metric | Value |
-|---|---|
-| Score | 165+ |
-| Collisions | 0-1 |
-| Ambulances yielded | 4 |
-| Obstacles avoided | 3-4 |
-| Brain calls | 0-3 (cache handles rest) |
-| Cache hits | 5-9 at $0 each |
-
----
-
-## Pattern Store (Muscle Memory)
-
-After 2 consistent brain decisions on the same pattern, the muscle replays what the brain already decided -- without asking again. Zero latency. Zero cost.
-
-The brain is not bypassed. It is cached. Same outcome, faster, cheaper, still correctable. That is exactly how biological muscle memory works.
-
----
-
-## Three Adapters, Same Brain
-
-| Adapter | Body | What it proves |
-|---|---|---|
-| **Missile Defense** (`adapters/aim-lab/`) | 10 launchers, 4 entity types | Brain classifies stealth + vetoes planes |
-| **Self-Driving Car** (`adapters/self-driving-car/`) | Car on 3-lane road | Lane changes, ambulance yield, obstacle avoidance |
-| **10-Lane Highway** (`adapters/highway/`) | 5+5 lane divided highway | Traffic signals, lane narrowing, chaos mode |
-
-Same server. Same bridge. Same Nova Micro. **Zero code changes between adapters.**
-
 ---
 
 ## SDK
@@ -118,46 +61,77 @@ Same server. Same bridge. Same Nova Micro. **Zero code changes between adapters.
 npm install scp-protocol
 ```
 
-The SDK package (`packages/scp-core/`) exports:
+The SDK (`packages/scp-core/`) exports:
 
-- **PatternStore** -- muscle memory with similarity matching, confidence scoring, exploration rate
-- **SCPAdapter** -- base class for any body, with reflex layer
-- **SCPBridge** -- base class for any LLM provider
+| Module | What it does |
+|--------|-------------|
+| **PatternStore** | Muscle memory with similarity matching, confidence scoring, exploration rate |
+| **SCPAdapter** | Base class for any body, with reflex layer |
+| **SCPBridge** | Base class for any LLM provider |
+| **BedrockBridge** | AWS Nova Micro, Claude via Bedrock |
+| **OllamaBridge** | Local models (llama3.2, mistral), free |
+| **OpenAIBridge** | GPT-4o, GPT-4o-mini |
+| **WebSocketTransport** | Browser and desktop adapters |
+| **HTTPTransport** | Hardware adapters (Raspberry Pi, ESP32) |
 
-56 tests. Zero external services. SQLite ships bundled.
+76 tests. Zero external services. SQLite ships bundled.
 
 ---
 
-## How to Run
+## How to run
 
 ```bash
 # Terminal 1 -- serve an adapter
 cd adapters/self-driving-car && python -m http.server 8080
 
 # Terminal 2 -- start the bridge (spawns MCP server internally)
-cd client
+cd bridge
 PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node qwen-mcp-bridge.js
 ```
 
 Open `http://localhost:8080/muscle.html`. Select SCP mode. Press Play.
 
-Swap adapters by changing the folder:
-
-```bash
-# Missile defense
-cd adapters/aim-lab && python -m http.server 8080
-
-# Highway
-cd adapters/highway && python -m http.server 8080
-```
-
-**Requirements:** Node.js 20+, AWS Bedrock access (Nova Micro), `.env` with AWS credentials.
-
-Cost: ~$0.001 per brain call. Most runs cost less than $0.10.
+**Requirements:** Node.js 18+, AWS Bedrock access (Nova Micro), `.env` with AWS credentials.
 
 ---
 
-## Writing an Adapter
+## Repo structure
+
+```
+SCP/
+  schema/             Frozen protocol (v0.1.0)
+  server/             MCP server + WebSocket bridge
+  bridge/             LLM bridge (Bedrock Nova Micro)
+  adapters/
+    aim-lab/          Missile defense (10 launchers)
+    self-driving-car/ 3-lane road
+    highway/          10-lane divided highway
+  packages/
+    scp-core/         npm package (scp-protocol)
+      bridges/        Bedrock, Ollama, OpenAI
+      transports/     WebSocket, HTTP
+      tests/          76 tests
+  examples/
+    drone-patrol/     Simulation example
+  assets/             Demo videos and thumbnails
+  PLAN.md             Master development plan
+```
+
+---
+
+## Three adapters, same brain
+
+| Adapter | Body | What it proves |
+|---|---|---|
+| **Missile Defense** | 10 launchers, 4 entity types | Brain classifies stealth + vetoes planes |
+| **Self-Driving Car** | Car on 3-lane road | Ambulance yield, obstacle avoidance |
+| **10-Lane Highway** | 5+5 lane divided highway | Traffic signals, chaos mode |
+
+Same server. Same bridge. Same Nova Micro. Zero code changes between adapters.
+
+---
+
+## Writing an adapter
 
 Three files. That is the entire contract.
 
@@ -172,23 +146,11 @@ The bridge, MCP server, and protocol require zero changes.
 
 ---
 
-## Contributing
+## Links
 
-Want to add an adapter?
-
-1. Copy `adapters/self-driving-car/` as a template
-2. Update `embodiment.json` for your body -- actuators, sensors, workspace bounds
-3. Write `muscle.js` for your physics -- movement, collision, sensor simulation, lane/target logic
-4. Update `system-prompt.md` for your context -- tell the brain what sensor patterns mean and what actions to take
-5. Open a PR
-
-The only rule: don't touch `server/`, `client/`, or `schema/`. The protocol is frozen. Your adapter is the only thing you write.
-
----
-
-## The Pitch
-
-Same LLM, same protocol, zero training. Adapter #1 defended a border with 10 missile launchers. Adapter #2 drove a car through traffic with ambulances and obstacles. The protocol didn't change. The brain didn't change. Just the adapter.
+- **Docs:** https://srk-e37e8aa3.mintlify.app
+- **npm:** https://npmjs.com/package/scp-protocol
+- **AnimTOON-3B:** https://huggingface.co/srk0102/AnimTOON-3B
 
 ---
 

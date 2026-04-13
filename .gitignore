@@ -5,3 +5,4 @@ packets.jsonl
 runs/
 *.log
 .DS_Store
+PLAN.md
