@@ -1,6 +1,6 @@
 {
   "name": "scp-protocol",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
   "main": "index.js",
   "module": "index.mjs",
