@@ -2,6 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "SCP",
+  "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -19,42 +20,38 @@
       "dark": "#0F0F1A"
     }
   },
-  "topbarLinks": [
-    {
-      "name": "GitHub",
-      "url": "https://github.com/srk0102/SCP"
-    },
-    {
-      "name": "npm",
-      "url": "https://npmjs.com/package/scp-protocol"
+  "navbar": {
+    "links": [
+      {
+        "type": "github",
+        "href": "https://github.com/srk0102/SCP"
+      },
+      {
+        "label": "npm",
+        "href": "https://npmjs.com/package/scp-protocol"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "/docs/getting-started"
     }
-  ],
-  "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "/docs/getting-started"
   },
-  "anchors": [
-    {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/srk0102/SCP"
-    },
-    {
-      "name": "npm",
-      "icon": "npm",
-      "url": "https://npmjs.com/package/scp-protocol"
-    }
-  ],
   "navigation": {
     "groups": [
       {
         "group": "Get Started",
-        "pages": ["docs/introduction", "docs/getting-started"]
+        "pages": [
+          "docs/introduction",
+          "docs/getting-started"
+        ]
       }
     ]
   },
-  "footerSocials": {
-    "github": "https://github.com/srk0102/SCP"
+  "footer": {
+    "socials": {
+      "github": "https://github.com/srk0102/SCP"
+    }
   },
   "feedback": {
     "thumbsRating": true,
