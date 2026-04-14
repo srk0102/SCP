@@ -1,6 +1,6 @@
 {
   "name": "scp-protocol",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
   "main": "index.js",
   "module": "index.mjs",
@@ -17,6 +17,7 @@
       "import": "./adapter.mjs",
       "require": "./adapter.js"
     },
+    "./body": "./body.js",
     "./bridge": {
       "import": "./bridge.mjs",
       "require": "./bridge.js"
@@ -65,9 +66,12 @@
     "pattern-store.mjs",
     "adapter.js",
     "adapter.mjs",
+    "body.js",
     "bridge.js",
     "bridge.mjs",
     "bridges/",
-    "transports/"
+    "transports/",
+    "README.md",
+    "LICENSE"
   ]
 }
