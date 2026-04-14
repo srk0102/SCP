@@ -1,6 +1,6 @@
 {
   "name": "scp-protocol",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Spatial Context Protocol -- real-time AI execution runtime for embodied systems",
   "main": "index.js",
   "module": "index.mjs",
@@ -58,6 +58,18 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0"
+  },
+  "peerDependencies": {
+    "ws": "^8.0.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ws": {
+      "optional": true
+    },
+    "@aws-sdk/client-bedrock-runtime": {
+      "optional": true
+    }
   },
   "files": [
     "index.js",
