@@ -1,12 +1,68 @@
-# scp-protocol
+<p align="center">
+  <img src="https://raw.githubusercontent.com/srk0102/SCP/master/assets/logo.svg" width="140" height="140" alt="SCP"/>
+</p>
 
-Real-time execution runtime for embodied AI. An `SCPBody` runs a tick loop, keeps its own pattern cache, and delegates to an LLM only when the cache misses.
+<h1 align="center">scp-protocol</h1>
+
+<p align="center">
+  Real-time execution runtime for embodied AI.
+  <br/>
+  One body, one LLM, a local pattern cache between them.
+</p>
+
+<p align="center">
+  <a href="https://npmjs.com/package/scp-protocol"><img src="https://img.shields.io/npm/v/scp-protocol?color=4F46E5&label=npm" alt="npm"/></a>
+  <a href="https://github.com/srk0102/SCP"><img src="https://img.shields.io/github/license/srk0102/SCP?color=818CF8" alt="license"/></a>
+  <a href="https://github.com/srk0102/SCP"><img src="https://img.shields.io/badge/tests-112%20passing-10B981" alt="tests"/></a>
+  <a href="https://github.com/srk0102/plexa"><img src="https://img.shields.io/badge/orchestrate_with-plexa-818CF8" alt="plexa"/></a>
+</p>
+
+---
+
+## Demo: MuJoCo cart-pole
+
+[![Watch the demo](https://res.cloudinary.com/still-studying/video/upload/so_3/Screen_Recording_2026-04-13_010202_qlnftl.jpg)](https://res.cloudinary.com/still-studying/video/upload/Screen_Recording_2026-04-13_010202_qlnftl.mp4)
+
+Real MuJoCo physics. The brain is asked every cache miss; over time the pattern store answers locally and brain calls drop.
+
+---
+
+## Overview
+
+An `SCPBody` runs a tick loop, keeps its own pattern cache, and delegates to an LLM only when the cache misses.
 
 ```bash
 npm install scp-protocol
 ```
 
 Node >= 18. One production dependency: `better-sqlite3` (for pattern persistence). LLM bridges and network transports are optional peer deps, installed only when you use them.
+
+---
+
+## Architecture
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/srk0102/SCP/master/assets/architecture.svg" alt="SCP architecture"/>
+</p>
+
+## Adapters
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/srk0102/SCP/master/assets/adapters-proof.svg" alt="SCP adapters"/>
+</p>
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="https://github.com/srk0102/SCP/blob/master/assets/missile-defense.mp4"><img src="https://raw.githubusercontent.com/srk0102/SCP/master/assets/missile-defense-thumb.png" width="320" alt="Missile Defense"/></a>
+<br/><sub>Missile defense -- 10 launchers, brain classifies stealth</sub>
+</td>
+<td width="50%" align="center">
+<a href="https://github.com/srk0102/SCP/blob/master/assets/car-simulation.mp4"><img src="https://raw.githubusercontent.com/srk0102/SCP/master/assets/car-simulation-thumb.png" width="320" alt="Self-driving car"/></a>
+<br/><sub>Self-driving car -- ambulance yield, obstacle avoidance</sub>
+</td>
+</tr>
+</table>
 
 ---
 
