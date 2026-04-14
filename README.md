@@ -55,13 +55,14 @@ Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
 
 ## Transport truth
 
-| Hop | Mechanism | Latency |
-|------|-----------|---------|
-| Muscle -> Pattern store | direct function call (in-process) | 0.1 ms |
-| Muscle -> Bridge | WebSocket or HTTP | 1-5 ms |
-| Bridge -> LLM | HTTPS (always remote) | ~500 ms |
+| Connection | Transport | Latency |
+|---|---|---|
+| Muscle -> Pattern store | function call | 0 ms |
+| JS Body -> Plexa | function call | 0 ms |
+| Python Body -> Plexa | HTTP | 1-5 ms |
+| Plexa -> LLM | HTTP | 500 ms+ |
 
-**Real-time loop never waits for anything except RAM.** SCP keeps the muscle path local. Network only enters at the LLM boundary.
+**Real-time loop never waits for anything except RAM.** Zero HTTP between JS bodies and the orchestrator. HTTP only where physically necessary.
 
 If you orchestrate multiple SCP bodies under one brain, see [Plexa](https://github.com/srk0102/plexa) -- the orchestration layer above SCP.
 
