@@ -68,6 +68,40 @@ If you orchestrate multiple SCP bodies under one brain, see [Plexa](https://gith
 
 ---
 
+## Pattern store: caching that knows when it's wrong (v0.3)
+
+The pattern store does more than cache brain decisions. Every cached decision gets scored after execution:
+
+```javascript
+const result = store.lookup(entity)
+if (result) execute(result.decision)
+
+// After the action resolves:
+store.report(entity, successOrFailure)
+```
+
+- After N consecutive failures (default 3) the pattern is auto-invalidated and the brain is consulted fresh.
+- `store.on("pattern_invalidated", payload)` notifies observers.
+- `store.stats()` exposes `averageSuccessRate`, `lowConfidencePatterns`, `invalidations`.
+- `SCPBody.evaluateOutcome(state)` lets a body auto-report after every tool call.
+
+The cache still looks like caching. It is now a cache that self-corrects.
+
+---
+
+## Body intelligence: standalone and managed (v0.3)
+
+An `SCPBody` is intelligent in both modes.
+
+| Mode | LLM layer | Pattern store | Reflexes |
+|------|-----------|--------------|----------|
+| **standalone** | Body calls its own LLM | Local decisions | Local |
+| **managed** | Orchestrator (Plexa) owns the LLM | **Still local decisions** | Local |
+
+In managed mode the body continues to decide at muscle speed via its pattern store. It also notifies the orchestrator on every local decision so Plexa can build vertical memory. Managed = coordinated, not lobotomized.
+
+---
+
 ## Standing on shoulders
 
 SCP builds on Subsumption Architecture (Rodney Brooks, 1986), which first proposed splitting robot control into fast bottom-up layers rather than slow top-down reasoning.
