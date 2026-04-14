@@ -29,7 +29,16 @@ Real MuJoCo physics. The brain is asked every cache miss; over time the pattern 
 
 ## Overview
 
-An `SCPBody` runs a tick loop, keeps its own pattern cache, and delegates to an LLM only when the cache misses.
+An `SCPBody` runs a tick loop and owns a four-layer decision stack. Only the top layer calls the LLM; the lower three never leave the process.
+
+```
+1. Reflex            hard rules in the body           0-5 ms
+2. PatternStore      exact / very-similar cache       0.1 ms
+3. AdaptiveMemory    similarity-scored generalizer    1-5 ms
+4. LLM brain         novel situations only            500 ms+
+```
+
+Every LLM decision is written back to layers 2 and 3, so layer 4 gets quieter over time.
 
 ```bash
 npm install scp-protocol
@@ -134,7 +143,7 @@ A feature-keyed cache for brain decisions.
 
 | Operation     | What it does                                                                    |
 |---------------|----------------------------------------------------------------------------------|
-| `lookup`      | Exact-hash match, falls back to k-NN similarity over numeric/string/bool fields. |
+| `lookup`      | Exact-hash match, falls back to k-NN similarity over numeric/string/bool fields. Returns `{ decision, confidence, source }` where source is `"exact"` or `"similar"`. |
 | `learn`       | Store a decision against an entity's feature vector. Bumps count on repeat.      |
 | `report`      | Record outcome for the last served pattern. Tracks consecutive failures.         |
 | `save`/`load` | Persist via localStorage (browser) or SQLite (Node, via `better-sqlite3`).       |
@@ -144,6 +153,34 @@ Tunables: `similarityThreshold`, `explorationRate` (epsilon-greedy), `maxPattern
 Emits: `pattern_invalidated` when a pattern crosses the failure threshold.
 
 `stats()` returns: `hits`, `misses`, `explorations`, `corrections`, `invalidations`, `totalReports`, `totalSuccesses`, `totalFailures`, `averageSuccessRate`, `lowConfidencePatterns`, `hitRate`.
+
+---
+
+## AdaptiveMemory
+
+A similarity-scored decision store that generalizes from brain decisions when the PatternStore misses. Plain JavaScript; no neural network.
+
+```javascript
+const { AdaptiveMemory } = require("scp-protocol")
+
+const mem = new AdaptiveMemory({
+  threshold: 0.8,
+  k: 5,
+  maxHistory: 500,
+  storage: "sqlite",
+  storageKey: "scp_adaptive.db",
+})
+
+mem.store(features, decision)          // record a decision
+const hit = mem.lookup(features)        // returns { decision, confidence } or null
+mem.report(features, success)           // reinforce / penalize; auto-purge at N failures
+```
+
+Scoring: weighted euclidean distance in normalized feature space, blended with the fraction of top-k neighbors that agree on the decision. Weights are per-feature and configurable.
+
+Confidence decays on failure and recovers on success. After `failureThreshold` consecutive failures an entry is purged; an `entry_purged` event fires.
+
+`stats()` returns: `entries`, `hits`, `misses`, `hitRate`, `avgConfidence`, `successReports`, `failureReports`, `purged`.
 
 ---
 
@@ -183,6 +220,34 @@ class Arm extends SCPBody {
 ```
 
 `invokeTool(name, params)` calls the method, records an outcome against the last cached entity, and returns the result.
+
+### Wiring all four layers
+
+```javascript
+const body = new Arm({
+  patternStore:    new PatternStore({ featureExtractor: (e) => ({ kind: e.kind }) }),
+  adaptiveMemory:  new AdaptiveMemory({ threshold: 0.8 }),
+})
+
+// In your tick / decide loop:
+const local = body.decideLocally(entity)
+if (local) {
+  // Pattern or adaptive memory had a confident answer.
+  execute(local.decision)
+} else {
+  const fromBrain = await brain.call(entity)
+  body.learnFromBrain(entity, fromBrain)   // writes to both cache layers
+  execute(fromBrain)
+}
+```
+
+`decideLocally(entity)` returns `{ decision, confidence, source }` where `source` is `"exact"`, `"similar"`, `"adaptive"`, or `null` on miss. `learnFromBrain(entity, decision)` stores in both the PatternStore and AdaptiveMemory.
+
+### Graceful shutdown
+
+```javascript
+body.installShutdownHandlers()   // saves patternStore + adaptiveMemory on SIGINT / SIGTERM
+```
 
 ### Modes
 
@@ -246,12 +311,13 @@ Each body keeps its own pattern store and decides at muscle speed; Plexa handles
 npm test
 ```
 
-112 tests across 9 suites. Built-in `node:test`, no test framework dependency.
+145 tests across 10 suites. Built-in `node:test`, no test framework dependency.
 
 | Suite                  | Tests |
 |------------------------|------:|
 | pattern-store          | 23 |
 | success-rate           | 28 |
+| adaptive-memory        | 28 |
 | adapter                | 14 |
 | bridge                 | 10 |
 | bridges                | 10 |
@@ -259,6 +325,8 @@ npm test
 | managed-mode           |  8 |
 | integration            |  7 |
 | persistence            |  5 |
+
+`persistence.test.js` requires `better-sqlite3` to be compiled; it skips gracefully otherwise.
 
 `persistence.test.js` is skipped automatically if `better-sqlite3` fails to build on the host.
 
@@ -268,10 +336,8 @@ npm test
 
 So you do not have to go looking:
 
-- No multi-body orchestrator. See [`@srk0102/plexa`](https://www.npmjs.com/package/@srk0102/plexa).
-- No safety gate above the body's own reflexes.
-- No vertical / cross-session memory. The pattern store is per-body.
-- No Python client. SCP bodies written in Python coordinate via `HTTPTransport`.
+- No multi-body orchestrator. See [`@srk0102/plexa`](https://www.npmjs.com/package/@srk0102/plexa) for safety gates, approval hooks, cross-session vertical memory, lateral body-to-body events, and LLM brains with cost tracking and retry.
+- No Python client. SCP bodies written in Python coordinate via `HTTPTransport` and expose `/discover`, `/health`, `/state`, `/events`, `/tool`.
 - No CRDT or cross-body shared state.
 
 ---

@@ -56,12 +56,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "better-sqlite3": "^11.0.0"
-  },
   "peerDependencies": {
-    "ws": "^8.0.0",
-    "@aws-sdk/client-bedrock-runtime": "^3.0.0"
+    "@aws-sdk/client-bedrock-runtime": "^3.0.0",
+    "ws": "^8.0.0"
   },
   "peerDependenciesMeta": {
     "ws": {
@@ -85,5 +82,8 @@
     "transports/",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "devDependencies": {
+    "better-sqlite3": "^12.9.0"
+  }
 }

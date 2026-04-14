@@ -50,7 +50,11 @@ class SCPBody {
 
     // Optional pattern store + last cached entity for outcome reporting
     this.patternStore = opts.patternStore || null;
+    // Optional adaptive memory: similarity-based generalization layer that
+    // sits between the pattern store and the LLM brain.
+    this.adaptiveMemory = opts.adaptiveMemory || null;
     this._lastCachedEntity = null;
+    this._lastMemoryEntity = null;
 
     this.space = null;
     this.mode = "standalone";
@@ -125,13 +129,45 @@ class SCPBody {
    * @returns { decision, source, confidence } from pattern store, or null on miss
    */
   decideLocally(entity) {
-    if (!this.patternStore) return null;
-    const result = this.patternStore.lookup(entity);
-    if (result) {
-      this._lastCachedEntity = entity;
-      this.notifyDecision(entity, result.decision, { source: result.source || "cache", confidence: result.confidence });
+    // Layer 2: PatternStore (exact / very-similar).
+    if (this.patternStore) {
+      const hit = this.patternStore.lookup(entity);
+      if (hit) {
+        this._lastCachedEntity = entity;
+        this.notifyDecision(entity, hit.decision, { source: hit.source || "cache", confidence: hit.confidence });
+        return hit;
+      }
     }
-    return result;
+    // Layer 3: AdaptiveMemory (similarity-based generalization).
+    if (this.adaptiveMemory) {
+      const features = this.patternStore && typeof this.patternStore.features === "function"
+        ? this.patternStore.features(entity)
+        : (entity && typeof entity === "object" ? entity : { v: entity });
+      const mem = this.adaptiveMemory.lookup(features);
+      if (mem) {
+        this._lastMemoryEntity = { features };
+        this.notifyDecision(entity, mem.decision, { source: "adaptive", confidence: mem.confidence });
+        return { decision: mem.decision, confidence: mem.confidence, source: "adaptive" };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Record a brain-sourced decision into the pattern store and the
+   * adaptive memory. Call this after an LLM reply so both layers can
+   * learn from it.
+   */
+  learnFromBrain(entity, decision) {
+    if (this.patternStore && typeof this.patternStore.learn === "function") {
+      this.patternStore.learn(entity, decision);
+    }
+    if (this.adaptiveMemory && typeof this.adaptiveMemory.store === "function") {
+      const features = this.patternStore && typeof this.patternStore.features === "function"
+        ? this.patternStore.features(entity)
+        : (entity && typeof entity === "object" ? entity : { v: entity });
+      this.adaptiveMemory.store(features, decision);
+    }
   }
 
   /**
@@ -153,14 +189,20 @@ class SCPBody {
   evaluateOutcome(/* state */) { return null; }
 
   _maybeReportOutcome() {
-    if (!this.patternStore || !this._lastCachedEntity) return;
-    let outcome;
+    let outcome = null;
     try { outcome = this.evaluateOutcome(this._state.data); }
     catch { return; }
     if (outcome !== true && outcome !== false) return;
-    this.patternStore.report(this._lastCachedEntity, outcome);
-    this.stats.reports++;
-    if (outcome) this._lastCachedEntity = null; // success -- new evaluation cycle
+
+    if (this.patternStore && this._lastCachedEntity) {
+      this.patternStore.report(this._lastCachedEntity, outcome);
+      this.stats.reports++;
+      if (outcome) this._lastCachedEntity = null;
+    }
+    if (this.adaptiveMemory && this._lastMemoryEntity) {
+      this.adaptiveMemory.report(this._lastMemoryEntity.features, outcome);
+      if (outcome) this._lastMemoryEntity = null;
+    }
   }
 
   // -- Space attachment --
@@ -241,6 +283,36 @@ class SCPBody {
   }
 
   clearPendingEvents() { this._state.pending_events = []; }
+
+  /**
+   * Install graceful shutdown handlers for this body so its pattern store
+   * (and adaptive memory if present) are persisted on SIGINT / SIGTERM.
+   * Idempotent. Call once in standalone-mode bodies. In managed mode the
+   * Space handles the save on its own stop().
+   */
+  installShutdownHandlers() {
+    if (this._shutdownInstalled) return this;
+    this._shutdownInstalled = true;
+    const save = (signal) => {
+      try {
+        if (this.patternStore && typeof this.patternStore.save === "function") {
+          this.patternStore.save();
+          const n = this.patternStore.patterns ? this.patternStore.patterns.size : 0;
+          console.log(`[scp] patterns saved (${n} entries)`);
+        }
+      } catch {}
+      try {
+        if (this.adaptiveMemory && typeof this.adaptiveMemory.save === "function") {
+          const n = this.adaptiveMemory.save();
+          if (typeof n === "number") console.log(`[scp] adaptive memory saved (${n} entries)`);
+        }
+      } catch {}
+      process.exit(signal === "SIGINT" ? 130 : 143);
+    };
+    process.once("SIGINT",  () => save("SIGINT"));
+    process.once("SIGTERM", () => save("SIGTERM"));
+    return this;
+  }
 }
 
 module.exports = { SCPBody, PRIORITY };

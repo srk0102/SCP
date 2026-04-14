@@ -351,6 +351,8 @@ class PatternStore extends EventEmitter {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     const tx = this._db.transaction(() => {
+      // Clear stale rows so the table mirrors the in-memory map exactly.
+      this._db.prepare("DELETE FROM patterns").run();
       for (const [k, v] of this.patterns) {
         upsert.run(
           k, v.decision, v.count, JSON.stringify(v._features || {}),

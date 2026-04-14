@@ -3,6 +3,7 @@
 // "LangGraph helps AI think. SCP helps AI act continuously in the real world."
 
 const { PatternStore } = require("./pattern-store");
+const { AdaptiveMemory } = require("./adaptive-memory");
 const { SCPAdapter } = require("./adapter");
 const { SCPBody, PRIORITY } = require("./body");
 const { SCPBridge } = require("./bridge");
@@ -20,6 +21,7 @@ const { HTTPTransport } = require("./transports/http");
 module.exports = {
   // Core
   PatternStore,
+  AdaptiveMemory,
   SCPBody,        // v0.2 -- pure class, default inprocess
   SCPAdapter,     // v0.1 legacy, kept for back-compat
   SCPBridge,
