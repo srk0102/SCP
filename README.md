@@ -14,10 +14,13 @@
   <a href="https://npmjs.com/package/scp-protocol"><img src="https://img.shields.io/npm/v/scp-protocol?color=4F46E5&label=npm" alt="npm"/></a>
   <a href="https://github.com/srk0102/SCP"><img src="https://img.shields.io/github/license/srk0102/SCP?color=818CF8" alt="license"/></a>
   <a href="https://srk-e37e8aa3.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-818CF8" alt="docs"/></a>
+  <a href="https://github.com/srk0102/plexa"><img src="https://img.shields.io/badge/orchestrate_with-plexa-818CF8" alt="plexa"/></a>
 </p>
 
 > Any LLM. Any body. Zero training.
 > Brain calls dropped from 27 to 0 across 5 adapters including real MuJoCo physics.
+
+> **Coordinating multiple bodies?** See [Plexa](https://github.com/srk0102/plexa) -- one brain, many bodies. Built on SCP.
 
 ---
 
