@@ -48,6 +48,10 @@ class SCPBody {
       throw new Error(`SCPBody ${this.name}: transport=http requires a port`);
     }
 
+    // Optional pattern store + last cached entity for outcome reporting
+    this.patternStore = opts.patternStore || null;
+    this._lastCachedEntity = null;
+
     this.space = null;
     this.mode = "standalone";
 
@@ -64,6 +68,7 @@ class SCPBody {
       toolCalls: 0,
       toolErrors: 0,
       events: 0,
+      reports: 0,
     };
   }
 
@@ -78,6 +83,11 @@ class SCPBody {
   /**
    * Direct tool invocation. Used by Plexa for inprocess bodies.
    * Network bodies override this to make an HTTP call instead.
+   *
+   * If a pattern store is attached and evaluateOutcome is overridden,
+   * the result is automatically reported back to the cache after the
+   * tool runs. Subclasses may also remember the entity that produced
+   * the cached decision via rememberCachedEntity().
    */
   async invokeTool(toolName, parameters = {}) {
     const tools = this.getToolDefinitions();
@@ -86,11 +96,39 @@ class SCPBody {
     if (typeof fn !== "function") throw new Error(`${this.name}: tool "${toolName}" declared but no method`);
     this.stats.toolCalls++;
     try {
-      return await fn.call(this, parameters || {});
+      const result = await fn.call(this, parameters || {});
+      this._maybeReportOutcome();
+      return result;
     } catch (e) {
       this.stats.toolErrors++;
       throw e;
     }
+  }
+
+  /**
+   * Subclass calls this when it consumes a cached decision so the body
+   * can later report the outcome back to the pattern store.
+   */
+  rememberCachedEntity(entity) {
+    this._lastCachedEntity = entity;
+  }
+
+  /**
+   * Override in subclass to evaluate whether the current state means
+   * the last cached decision succeeded. Return true (success), false
+   * (failure), or null (unknown -- skip reporting).
+   */
+  evaluateOutcome(/* state */) { return null; }
+
+  _maybeReportOutcome() {
+    if (!this.patternStore || !this._lastCachedEntity) return;
+    let outcome;
+    try { outcome = this.evaluateOutcome(this._state.data); }
+    catch { return; }
+    if (outcome !== true && outcome !== false) return;
+    this.patternStore.report(this._lastCachedEntity, outcome);
+    this.stats.reports++;
+    if (outcome) this._lastCachedEntity = null; // success -- new evaluation cycle
   }
 
   // -- Space attachment --
