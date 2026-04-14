@@ -5,9 +5,16 @@
 <h1 align="center">scp-protocol</h1>
 
 <p align="center">
-  Real-time execution runtime for embodied AI.
+  Any LLM. Any continuously running system.
   <br/>
-  One body, one LLM, a local pattern cache between them.
+  Brain teaches once. System remembers forever.
+</p>
+
+<p align="center">
+  SCP is not just for robots. Any system that runs continuously and
+  occasionally needs an LLM to intervene can use SCP. Game NPCs. Robot
+  arms. Web backends. Simulation agents. Animation rigs. If it runs in
+  a loop and pushes state, SCP connects it to any LLM.
 </p>
 
 <p align="center">
@@ -23,7 +30,7 @@
 
 [![Watch the demo](https://res.cloudinary.com/still-studying/video/upload/so_3/Screen_Recording_2026-04-13_010202_qlnftl.jpg)](https://res.cloudinary.com/still-studying/video/upload/Screen_Recording_2026-04-13_010202_qlnftl.mp4)
 
-Real MuJoCo physics. The brain is asked every cache miss; over time the pattern store answers locally and brain calls drop.
+Real MuJoCo physics. The brain is asked on every cache miss; brain decisions are then cached locally so familiar situations no longer wake it. Novel situations always wake the brain. Cost is proportional to novelty.
 
 ---
 
@@ -75,11 +82,18 @@ Node >= 18. One production dependency: `better-sqlite3` (for pattern persistence
 
 ---
 
-## What it does
+## What SCP does
 
-- Split control into three layers with different latency budgets: reflex (in-body, sub-millisecond), muscle (local pattern cache, microseconds), brain (LLM, hundreds of milliseconds).
-- Cache brain decisions keyed by feature vectors, replay them locally when the same situation recurs, invalidate them when outcomes stop matching.
-- Provide one base class (`SCPBody`) that works both standalone (body owns an LLM) and managed (an orchestrator such as [Plexa](https://www.npmjs.com/package/@srk0102/plexa) owns the LLM). The body keeps its local cache in both modes.
+SCP gives a continuously running system the ability to call an LLM only when it cannot answer locally. The body runs in a loop, holds its own decision cache, and the LLM advises only on novel situations. Brain decisions are then cached locally for next time.
+
+It works for any system that ticks and pushes state, not just robots:
+
+- **Game AI.** An NPC behavior loop that calls the LLM the first few times it sees a new player tactic, then handles the same tactic locally forever after.
+- **Robotics.** Physical actuators at 60 fps with a slow LLM as the strategic layer.
+- **Simulation.** A policy that learns from LLM decisions without retraining a model.
+- **Web backends.** A server that asks the LLM how to react to a new error pattern, then handles the same pattern from cache on subsequent occurrences. See [examples/web-backend](https://srk-e37e8aa3.mintlify.app/examples/web-backend).
+
+The body decides when the brain wakes based on confidence thresholds in the pattern store and adaptive memory. When cached decisions are confident enough the brain stays silent. When confidence drops below threshold the brain is called. Default thresholds are conservative. Tune them per use case.
 
 It does not ship an agent framework, a planner, or a safety layer. It is a caching layer around LLM tool calls, with a tick-loop body contract.
 
