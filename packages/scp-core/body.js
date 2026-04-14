@@ -114,6 +114,38 @@ class SCPBody {
   }
 
   /**
+   * Decide locally via the pattern store and notify the orchestrator.
+   *
+   * The body is intelligent in BOTH standalone and managed modes. In
+   * managed mode the body still uses its pattern store to decide --
+   * it just tells the orchestrator what it decided so Plexa can build
+   * vertical memory and learn from body-local choices.
+   *
+   * @param {*} entity - input to feature extractor
+   * @returns { decision, source, confidence } from pattern store, or null on miss
+   */
+  decideLocally(entity) {
+    if (!this.patternStore) return null;
+    const result = this.patternStore.lookup(entity);
+    if (result) {
+      this._lastCachedEntity = entity;
+      this.notifyDecision(entity, result.decision, { source: result.source || "cache", confidence: result.confidence });
+    }
+    return result;
+  }
+
+  /**
+   * Report a body-local decision up to the orchestrator.
+   * Direct function call (zero HTTP in-process).
+   * The orchestrator records this for vertical memory / analytics.
+   * Safe to call without an attached Space.
+   */
+  notifyDecision(entity, decision, meta = {}) {
+    if (!this.space || typeof this.space.onBodyDecision !== "function") return;
+    this.space.onBodyDecision(this.name, entity, decision, meta);
+  }
+
+  /**
    * Override in subclass to evaluate whether the current state means
    * the last cached decision succeeded. Return true (success), false
    * (failure), or null (unknown -- skip reporting).
