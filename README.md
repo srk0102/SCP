@@ -1,135 +1,22 @@
-<p align="center">
-  <img src="assets/logo.svg" width="140" height="140" alt="SCP Logo"/>
-</p>
+# scp-protocol
 
-<h1 align="center">Spatial Context Protocol</h1>
+Real-time execution runtime for embodied AI. An `SCPBody` runs a tick loop, keeps its own pattern cache, and delegates to an LLM only when the cache misses.
 
-<p align="center">
-  Real-time AI execution runtime for embodied systems.
-  <br/>
-  <strong>In MCP the brain asks. In SCP the muscle asks.</strong>
-</p>
-
-<p align="center">
-  <a href="https://npmjs.com/package/scp-protocol"><img src="https://img.shields.io/npm/v/scp-protocol?color=4F46E5&label=npm" alt="npm"/></a>
-  <a href="https://github.com/srk0102/SCP"><img src="https://img.shields.io/github/license/srk0102/SCP?color=818CF8" alt="license"/></a>
-  <a href="https://srk-e37e8aa3.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-818CF8" alt="docs"/></a>
-  <a href="https://github.com/srk0102/plexa"><img src="https://img.shields.io/badge/orchestrate_with-plexa-818CF8" alt="plexa"/></a>
-</p>
-
-> Any LLM. Any body. Zero training.
-> Brain calls dropped from 27 to 0 across 5 adapters including real MuJoCo physics.
-
-> **Coordinating multiple bodies?** See [Plexa](https://github.com/srk0102/plexa) -- one brain, many bodies. Built on SCP.
-
----
-
-## What SCP does
-
-SCP connects any LLM to any body -- physical or virtual -- without retraining. The body runs at 60fps. The brain sleeps until needed. Brain calls drop to near-zero as the muscle learns.
-
-| | MCP | SCP |
-|---|---|---|
-| **Who initiates** | Brain asks, tool answers | Body acts, brain advises |
-| **Body** | Passive (waits) | Active (runs at 60fps) |
-| **Memory** | None | Pattern store replays brain decisions |
-| **Cost over time** | Constant | Drops to near zero |
-
----
-
-## Demo: MuJoCo cart-pole (real physics)
-
-[![Watch the demo](https://res.cloudinary.com/still-studying/video/upload/so_3/Screen_Recording_2026-04-13_010202_qlnftl.jpg)](https://res.cloudinary.com/still-studying/video/upload/Screen_Recording_2026-04-13_010202_qlnftl.mp4)
-
-*Click to watch.* Real MuJoCo physics. Real joint constraints. Brain learns to balance the pole, then goes silent.
-
-```
-Loop  1: brain=31  cache=119  reflex=43   <- brain handles most decisions
-Loop  5: brain= 5  cache=153  reflex=35   <- cache taking over
-Loop 12: brain= 4  cache=148  reflex=40   <- muscle learned
-Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
+```bash
+npm install scp-protocol
 ```
 
----
-
-## Architecture
-
-![SCP Architecture](assets/architecture.svg)
-
-## Transport truth
-
-| Connection | Transport | Latency |
-|---|---|---|
-| Muscle -> Pattern store | function call | 0 ms |
-| JS Body -> Plexa | function call | 0 ms |
-| Python Body -> Plexa | HTTP | 1-5 ms |
-| Plexa -> LLM | HTTP | 500 ms+ |
-
-**Real-time loop never waits for anything except RAM.** Zero HTTP between JS bodies and the orchestrator. HTTP only where physically necessary.
-
-If you orchestrate multiple SCP bodies under one brain, see [Plexa](https://github.com/srk0102/plexa) -- the orchestration layer above SCP.
+Node >= 18. One production dependency: `better-sqlite3` (for pattern persistence). LLM bridges and network transports are optional peer deps, installed only when you use them.
 
 ---
 
-## Pattern store: caching that knows when it's wrong (v0.3)
+## What it does
 
-The pattern store does more than cache brain decisions. Every cached decision gets scored after execution:
+- Split control into three layers with different latency budgets: reflex (in-body, sub-millisecond), muscle (local pattern cache, microseconds), brain (LLM, hundreds of milliseconds).
+- Cache brain decisions keyed by feature vectors, replay them locally when the same situation recurs, invalidate them when outcomes stop matching.
+- Provide one base class (`SCPBody`) that works both standalone (body owns an LLM) and managed (an orchestrator such as [Plexa](https://www.npmjs.com/package/@srk0102/plexa) owns the LLM). The body keeps its local cache in both modes.
 
-```javascript
-const result = store.lookup(entity)
-if (result) execute(result.decision)
-
-// After the action resolves:
-store.report(entity, successOrFailure)
-```
-
-- After N consecutive failures (default 3) the pattern is auto-invalidated and the brain is consulted fresh.
-- `store.on("pattern_invalidated", payload)` notifies observers.
-- `store.stats()` exposes `averageSuccessRate`, `lowConfidencePatterns`, `invalidations`.
-- `SCPBody.evaluateOutcome(state)` lets a body auto-report after every tool call.
-
-The cache still looks like caching. It is now a cache that self-corrects.
-
----
-
-## Body intelligence: standalone and managed (v0.3)
-
-An `SCPBody` is intelligent in both modes.
-
-| Mode | LLM layer | Pattern store | Reflexes |
-|------|-----------|--------------|----------|
-| **standalone** | Body calls its own LLM | Local decisions | Local |
-| **managed** | Orchestrator (Plexa) owns the LLM | **Still local decisions** | Local |
-
-In managed mode the body continues to decide at muscle speed via its pattern store. It also notifies the orchestrator on every local decision so Plexa can build vertical memory. Managed = coordinated, not lobotomized.
-
----
-
-## Standing on shoulders
-
-SCP builds on Subsumption Architecture (Rodney Brooks, 1986), which first proposed splitting robot control into fast bottom-up layers rather than slow top-down reasoning.
-
-What SCP adds for the LLM era:
-- Any LLM as the brain layer. Zero training required.
-- Open protocol. Three files to write an adapter.
-- Pattern store that learns from LLM decisions.
-- Cost drops to near zero over time.
-
----
-
-## Five adapters, same brain, same protocol
-
-![Adapter Proof](assets/adapters-proof.svg)
-
-| Adapter | Physics | Brain calls | Cache rate |
-|---|---|---|---|
-| Missile Defense | Canvas 2D | 27 -> 0/min | ~100% |
-| Self-Driving Car | Canvas 2D | drops to 0-3 | ~90% |
-| 10-Lane Highway | Canvas 2D | drops over time | ~90% |
-| MuJoCo Cart-Pole | Real physics | 27 -> 0 | 89% |
-| MuJoCo Ant | Real physics | 60 -> 6 | 85% |
-
-Same Nova Micro. Same bridge. Same protocol. Zero code changes between adapters.
+It does not ship an agent framework, a planner, or a safety layer. It is a caching layer around LLM tool calls, with a tick-loop body contract.
 
 ---
 
@@ -139,112 +26,206 @@ Same Nova Micro. Same bridge. Same protocol. Zero code changes between adapters.
 npm install scp-protocol
 ```
 
-```javascript
-const { PatternStore, SCPAdapter, OllamaBridge } = require('scp-protocol')
+Optional peer dependencies, install only if you use them:
 
-const store = new PatternStore({
-  featureExtractor: (entity) => ({
-    kind: entity.kind,
-    speed: entity.speed > 5 ? 'fast' : 'slow',
-  }),
-})
-
-// Reflex: fires in 0-5ms, before cache or brain
-adapter.reflex('emergency', (state) => {
-  if (state.distance < 5) return true
-})
-
-// Muscle loop
-const cached = store.lookup(entity)
-if (cached) {
-  execute(cached.decision)        // cache hit: 0.1ms, $0
-} else {
-  const d = await brain.invoke(e) // cache miss: ask brain
-  store.learn(entity, d)          // learn for next time
-}
+```bash
+npm install ws                                # for WebSocketTransport
+npm install @aws-sdk/client-bedrock-runtime   # for BedrockBridge
 ```
 
-76 tests. Zero external services. SQLite ships bundled.
+Ollama and OpenAI bridges use only `node:http`/`node:https` and require no extra packages.
 
 ---
 
 ## Quick start
 
+```javascript
+const { SCPBody, PatternStore } = require("scp-protocol")
+const { OllamaBridge }          = require("scp-protocol/bridges/ollama")
+
+class PatrolBody extends SCPBody {
+  static bodyName = "patrol"
+  static tools = {
+    halt:    { description: "stop motion",  parameters: {} },
+    advance: {
+      description: "move forward",
+      parameters: { speed: { type: "number", min: 0, max: 1, required: true } },
+    },
+  }
+
+  async halt()              { /* drive hardware */ }
+  async advance({ speed })  { /* drive hardware */ }
+}
+
+const store = new PatternStore({
+  featureExtractor: (entity) => ({ kind: entity.kind, close: entity.distance < 5 }),
+  failureThreshold: 3,   // auto-invalidate a cached pattern after 3 consecutive failures
+})
+
+const body = new PatrolBody({ patternStore: store, brain: new OllamaBridge({ model: "llama3.2" }) })
+
+// After every action resolves:
+store.report(entity, succeeded)   // true or false
+```
+
+That is the full surface the body code touches. Pattern lookup and brain fallback happen inside the body.
+
+---
+
+## PatternStore
+
+A feature-keyed cache for brain decisions.
+
+| Operation     | What it does                                                                    |
+|---------------|----------------------------------------------------------------------------------|
+| `lookup`      | Exact-hash match, falls back to k-NN similarity over numeric/string/bool fields. |
+| `learn`       | Store a decision against an entity's feature vector. Bumps count on repeat.      |
+| `report`      | Record outcome for the last served pattern. Tracks consecutive failures.         |
+| `save`/`load` | Persist via localStorage (browser) or SQLite (Node, via `better-sqlite3`).       |
+
+Tunables: `similarityThreshold`, `explorationRate` (epsilon-greedy), `maxPatterns` (LRU-ish eviction by hit count), `failureThreshold`.
+
+Emits: `pattern_invalidated` when a pattern crosses the failure threshold.
+
+`stats()` returns: `hits`, `misses`, `explorations`, `corrections`, `invalidations`, `totalReports`, `totalSuccesses`, `totalFailures`, `averageSuccessRate`, `lowConfidencePatterns`, `hitRate`.
+
+---
+
+## SCPBody
+
+A body is a class with a static tools map and one async method per tool.
+
+```javascript
+class Arm extends SCPBody {
+  static bodyName = "arm"
+  static transport = "inprocess"   // default. Set "http" to run the body in another process.
+  static tools = {
+    grasp:  { description: "close gripper", parameters: {} },
+    move:   {
+      description: "move end-effector",
+      parameters: {
+        x: { type: "number", required: true },
+        y: { type: "number", required: true },
+      },
+    },
+  }
+
+  async grasp()        { /* ... */ }
+  async move({ x, y }) { /* ... */ }
+
+  async tick() {
+    // sensor read loop, called by whoever drives the body
+    await super.tick()
+    this.setState({ pose: readJointAngles() })
+  }
+
+  // Override to auto-report outcomes after every tool call.
+  evaluateOutcome(state) {
+    return state.pose_error < 0.01
+  }
+}
+```
+
+`invokeTool(name, params)` calls the method, records an outcome against the last cached entity, and returns the result.
+
+### Modes
+
+| Mode         | Who calls the LLM       | Pattern store | Reflex |
+|--------------|-------------------------|---------------|--------|
+| standalone   | the body                | local         | local  |
+| managed      | an orchestrator (Plexa) | local         | local  |
+
+In managed mode the body still consults its local cache on every decision it makes. It notifies the orchestrator of local decisions; it does not defer to the orchestrator for them.
+
+---
+
+## Bridges
+
+| Bridge           | Package needed                      | Models                          |
+|------------------|-------------------------------------|---------------------------------|
+| `OllamaBridge`   | none (uses `node:http`)             | any local ollama model          |
+| `OpenAIBridge`   | none (uses `node:https`)            | `gpt-4o`, `gpt-4o-mini`         |
+| `BedrockBridge`  | `@aws-sdk/client-bedrock-runtime`   | Nova Micro, Claude via Bedrock  |
+
+All bridges extend `SCPBridge`, which tracks call count, total time, average latency, and errors.
+
+---
+
+## Transports
+
+| Transport            | Package needed | Purpose                                            |
+|----------------------|----------------|----------------------------------------------------|
+| (default, none)      | —              | Body methods are called directly (zero HTTP).      |
+| `HTTPTransport`      | none           | Body exposes `/emit`, `/poll`, `/health` over HTTP.|
+| `WebSocketTransport` | `ws`           | Full-duplex stream between body and controller.    |
+
+A body declares `static transport = "http"` and a `static port` to opt into a transport. Otherwise it is in-process.
+
+---
+
+## Working with Plexa
+
+Drop an `SCPBody` into a Plexa `Space` to put one LLM in front of several bodies:
+
+```javascript
+const { Space } = require("@srk0102/plexa")
+const { SCPBody } = require("scp-protocol")
+
+class Arm    extends SCPBody { /* ... */ }
+class Camera extends SCPBody { /* ... */ }
+
+const space = new Space("pick_and_place")
+space.addBody(new Arm())
+space.addBody(new Camera())
+await space.run()
+```
+
+Each body keeps its own pattern store and decides at muscle speed; Plexa handles brain-tier calls and cross-body coordination.
+
+---
+
+## Tests
+
 ```bash
-git clone https://github.com/srk0102/SCP.git && cd SCP
-
-# Terminal 1: serve an adapter
-cd adapters/self-driving-car && python -m http.server 8080
-
-# Terminal 2: start the bridge
-cd bridge
-PROMPT_PATH=../adapters/self-driving-car/system-prompt.md node qwen-mcp-bridge.js
+npm test
 ```
 
-Open `http://localhost:8080/muscle.html`. Press Play.
+112 tests across 9 suites. Built-in `node:test`, no test framework dependency.
+
+| Suite                  | Tests |
+|------------------------|------:|
+| pattern-store          | 23 |
+| success-rate           | 28 |
+| adapter                | 14 |
+| bridge                 | 10 |
+| bridges                | 10 |
+| transports             | 10 |
+| managed-mode           |  8 |
+| integration            |  7 |
+| persistence            |  5 |
+
+`persistence.test.js` is skipped automatically if `better-sqlite3` fails to build on the host.
 
 ---
 
-## Repo structure
+## What is not in this package
 
-```
-SCP/
-  schema/                 Frozen protocol (v0.1.0)
-  server/                 MCP server + WebSocket bridge
-  bridge/                 LLM bridge (Bedrock Nova Micro)
-  adapters/
-    aim-lab/              Missile defense
-    self-driving-car/     3-lane road
-    highway/              10-lane highway
-    mujoco-cartpole/      Cart-pole (Python + MuJoCo)
-    mujoco-ant/           Quadruped ant (Python + MuJoCo)
-  packages/scp-core/      npm package
-    bridges/              Bedrock, Ollama, OpenAI
-    transports/           WebSocket, HTTP
-    tests/                76 tests, 0 failures
-  examples/drone-patrol/  Node.js simulation
-```
+So you do not have to go looking:
 
----
-
-## Writing an adapter
-
-Three files. That is the entire contract.
-
-```
-adapters/your-body/
-  embodiment.json    -- describe your body
-  muscle.js          -- physics + sensors + pattern store
-  system-prompt.md   -- tell the brain what to classify
-```
-
-The bridge, server, and protocol require zero changes.
-
----
-
-## More demos
-
-<table>
-<tr>
-<td width="50%" align="center">
-<a href="assets/missile-defense.mp4"><img src="assets/missile-defense-thumb.png" width="280" alt="Missile Defense"/></a>
-<br/><sub>Missile Defense -- 10 launchers, brain classifies stealth</sub>
-</td>
-<td width="50%" align="center">
-<a href="assets/car-simulation.mp4"><img src="assets/car-simulation-thumb.png" width="280" alt="Self-Driving Car"/></a>
-<br/><sub>Self-Driving Car -- ambulance yield, obstacle avoidance</sub>
-</td>
-</tr>
-</table>
+- No multi-body orchestrator. See [`@srk0102/plexa`](https://www.npmjs.com/package/@srk0102/plexa).
+- No safety gate above the body's own reflexes.
+- No vertical / cross-session memory. The pattern store is per-body.
+- No Python client. SCP bodies written in Python coordinate via `HTTPTransport`.
+- No CRDT or cross-body shared state.
 
 ---
 
 ## Links
 
-- **Docs:** https://srk-e37e8aa3.mintlify.app
-- **npm:** https://npmjs.com/package/scp-protocol
-- **AnimTOON-3B:** https://huggingface.co/srk0102/AnimTOON-3B
+- Source: https://github.com/srk0102/SCP
+- npm: https://npmjs.com/package/scp-protocol
+- Orchestrator: https://npmjs.com/package/@srk0102/plexa
 
 ## License
 
-[MIT](LICENSE) -- [srk0102](https://github.com/srk0102)
+MIT
