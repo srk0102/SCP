@@ -149,22 +149,39 @@ Colors:    Deep indigo #4F46E5, Electric violet #818CF8, Dark bg #0F0F1A
 
 ## What To Do Next
 
-1. Finish remaining 5 docs pages (concepts, adapter, pattern-store, bridges, roadmap/faq)
-2. Build Phase 6 HTTP server (REST API so any language can talk to SCP)
-3. Tune MuJoCo ant gait so it actually walks
-4. Record cart-pole demo video for README
-5. Phase 7: Python SDK (pip install scp-protocol)
+1. v0.2.0: Confidence gating (L1 transient + L2 verified cache tiers)
+2. v0.2.0: Safety layer before caching LLM decisions
+3. v0.2.0: Outcome evaluation (reinforce/suppress based on result)
+4. Finish remaining 5 docs pages
+5. Godot plugin (primary market: indie game devs)
+6. Ollama zero-cost quickstart
 
 ---
 
-## Known Limitations
+## Honest Assessment (post external review)
 
-1. Bird/stealth misclassification bug (speed bucketing too coarse)
-2. Friendly fire timing (mark_ignore arrives after muscle fires)
-3. MuJoCo ant gait not tuned (falls over, but SCP layer works)
-4. No retry logic in bridge
-5. No cost tracking per session
-6. Docs incomplete (2 of 7 pages written)
+v0.1.1 is a reactive control system with decision caching.
+It is NOT a learning system. See HONEST_LIMITATIONS.md for full analysis.
+
+What works:
+- Cost reduction to near zero (proven)
+- Cross-body, cross-language (proven)
+- Real physics (MuJoCo proven)
+
+What does not work yet:
+- No outcome evaluation (cache stores decisions blindly)
+- No safety validation before caching
+- No temporal memory (each frame independent)
+- No generalization (caching, not learning)
+- Feature extraction is manual
+
+Path forward:
+```
+v0.2.0: Confidence gating + safety + evaluation
+v0.3.0: Small classifier + temporal memory
+v0.4.0: Live distillation
+v1.0.0: Stable, learned, safe
+```
 
 ---
 
@@ -187,6 +204,14 @@ Read PLAN.md for the full vision and architecture. Read this REPORT.md for what 
 - "In MCP the brain asks. In SCP the muscle asks."
 - "Brain teaches once. Muscle remembers forever."
 - "Any LLM, any body, zero training."
+- "Reactive control with decision caching." (honest v0.1 description)
+- "Layer 2 execution runtime for embodied AI." (positioning)
+
+**Important context:**
+- v0.1.1 is caching, not learning. Do not oversell.
+- Read HONEST_LIMITATIONS.md before making claims.
+- Read PLAN.md for v0.2.0 architecture (confidence gating).
+- Primary market is indie game developers, not enterprise.
 
 **What was proven:**
 - 5 adapters, 2 languages (JS + Python), same protocol

@@ -53,6 +53,20 @@ Loop 24: brain= 1  cache=158  reflex=35   <- brain nearly silent
 
 ![SCP Architecture](assets/architecture.svg)
 
+## Transport truth
+
+| Hop | Mechanism | Latency |
+|------|-----------|---------|
+| Muscle -> Pattern store | direct function call (in-process) | 0.1 ms |
+| Muscle -> Bridge | WebSocket or HTTP | 1-5 ms |
+| Bridge -> LLM | HTTPS (always remote) | ~500 ms |
+
+**Real-time loop never waits for anything except RAM.** SCP keeps the muscle path local. Network only enters at the LLM boundary.
+
+If you orchestrate multiple SCP bodies under one brain, see [Plexa](https://github.com/srk0102/plexa) -- the orchestration layer above SCP.
+
+---
+
 ## Standing on shoulders
 
 SCP builds on Subsumption Architecture (Rodney Brooks, 1986), which first proposed splitting robot control into fast bottom-up layers rather than slow top-down reasoning.
